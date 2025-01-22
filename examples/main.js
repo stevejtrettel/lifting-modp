@@ -25,7 +25,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import HopfTorus from "../items/HopfTorus";
 import {tau,coordCurve} from "../data/-3/tau";
-import pts from "../data/-3/11-31/pts1";
+import pts from "../data/-3/5-7/pts3";
 
 
 

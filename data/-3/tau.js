@@ -1,8 +1,11 @@
 import {Vector2} from "three";
 
-
 //the hexagonal torus
 const tau = new Vector2(1/2, Math.sqrt(3)/2);
+const alpha = new Vector2(-13/2, Math.sqrt(-3)/2);
+
+let curveLength = 4*Math.PI*tau.x;
+let curveArea = 4*Math.PI*tau,y;
 
 
 //CURVE FOR THE HEX TORUS
@@ -32,4 +35,4 @@ let coordCurve = function(t){
 
 
 
-export {tau, coordCurve};
+export {tau, alpha, curveLength,curveArea, coordCurve};

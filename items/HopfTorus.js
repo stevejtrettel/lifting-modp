@@ -70,7 +70,9 @@ class HopfTorus{
 
         this.coordCurve = coordCurve;
         this.res = 256;
-        this.rad = 0.0075;
+        this.rad = 0.045;
+            //0.018;
+            //0.0075;
 
 
         let pointGeom = new SphereGeometry(2.*this.rad);
