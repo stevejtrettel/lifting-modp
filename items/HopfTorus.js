@@ -18,7 +18,8 @@ import ParametricGeometry from "./ParametricGeometry";
 
 
 let defaultMatParams = {
-    color : 0xc9eaff,
+    color : 0x4d80d1,
+        //0xc9eaff,
         //0xbee6c5,
         //0xffffff,
     side: DoubleSide,

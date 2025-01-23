@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -24,7 +24,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
 import HopfTorus from "../items/HopfTorus";
-import {tau,coordCurve} from "../data/-3/tau";
+import {tau,curveArea, curveLength, coordCurve} from "../data/-11/tau";
 import pts from "../data/-3/5-7/pts3";
 
 
@@ -36,22 +36,20 @@ const scene = new Scene();
 
 
 // the computer for dealing with the hopf torus
-let area = 4.*Math.PI*tau.x;
-let length = 4.*Math.PI*tau.y;
-let torus = new HopfTorus(coordCurve,length,area);
+let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 
 
 ////{color:0x36409c,roughness:0.2,metalness:0,clearcoat:1}
-//let surf = hopf.getSurfaceMesh();
-// scene.add(surf);
+let surf = torus.getSurfaceMesh();
+scene.add(surf);
 
-let vertices = new Group();
-scene.add(vertices);
-
-for(let i=0; i<pts.length; i++){
-    vertices.add(torus.getPointMesh(pts[i]));
-}
-
+// let vertices = new Group();
+// scene.add(vertices);
+//
+// for(let i=0; i<pts.length; i++){
+//     vertices.add(torus.getPointMesh(pts[i]));
+// }
+//
 
 
 
@@ -137,8 +135,6 @@ texture.bottomColor.set( 0x666666 );
 texture.update();
 scene.environment = texture;
 scene.background = texture;
-
-
 
 
 // camera
