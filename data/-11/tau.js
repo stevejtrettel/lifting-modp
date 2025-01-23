@@ -8,8 +8,6 @@ let curveArea = 4*Math.PI*tau,x;
 let curveLength = 4*Math.PI*tau.y;
 
 
-
-//CURVE FOR THE HEX TORUS
 let coordCurve = function(t){
 
     let a =0.07;

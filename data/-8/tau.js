@@ -4,23 +4,27 @@ import {Vector2} from "three";
 const tau = new Vector2(0,Math.sqrt(2));
 
 //these *dont* come directly from tau, as thats the wrong representation of the rectangle
-//for area and length we need the *diagonal* rep of the rectangle
-const diag = new Vector2(1,Math.sqrt(2));
-let curveArea = 4*Math.PI*diag,x;
-let curveLength = 4*Math.PI*diag.y;
+//need to change coordinates in SL2Z: apply Tinv to move one to the left
+//then apply S = -1/z
+//this maps tau to a point along the circle (x-1/2)^2+y^2=1
+//multiply by 2Pi to get (A/2,L/2)
 
+const curveArea = 4*Math.PI/3;
+const curveLength = 4*Math.PI/3*Math.sqrt(2);
 
+//finding this curve is possible with basic trig!
+//length is 2pi R for R the radius of cross section of sphere at height of curve
+//this implies R = 2sqrt(2)/3.
+//drawing a triangle shows the angle a from the horizontal at the equator is arccos(this).
 
-//CURVE FOR THE HEX TORUS
 let coordCurve = function(t){
 
-    let a =0.276;
-    let b =1.9;
-    let n = 3;
+    const a = Math.acos(2*Math.sqrt(2)/3);
 
     return {
-        phi: Math.PI/2 + a*b*Math.cos(n*t),
-        theta: t + a*Math.sin(2*n*t)
+        phi: Math.PI/2 + a,
+        //this makes skinnier torus in projection. + a is OK too
+        theta: t
     };
 }
 

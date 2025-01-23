@@ -25,7 +25,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import HopfTorus from "../items/HopfTorus";
 import {tau,curveArea, curveLength, coordCurve} from "../data/-11/tau";
-import pts from "../data/-3/5-7/pts3";
+import pts from "../data/-11/3-5/pts6";
 
 
 
@@ -43,13 +43,13 @@ let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 let surf = torus.getSurfaceMesh();
 scene.add(surf);
 
-// let vertices = new Group();
-// scene.add(vertices);
-//
-// for(let i=0; i<pts.length; i++){
-//     vertices.add(torus.getPointMesh(pts[i]));
-// }
-//
+let vertices = new Group();
+scene.add(vertices);
+
+for(let i=0; i<pts.length; i++){
+    vertices.add(torus.getPointMesh(pts[i]));
+}
+
 
 
 

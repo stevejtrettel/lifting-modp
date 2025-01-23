@@ -18,8 +18,9 @@ import ParametricGeometry from "./ParametricGeometry";
 
 
 let defaultMatParams = {
-    color : 0x4d80d1,
-        //0xc9eaff,
+    color : 0xffffff,
+        //0x4d80d1,
+        //0xc9eaff,//lightblue
         //0xbee6c5,
         //0xffffff,
     side: DoubleSide,
@@ -29,7 +30,7 @@ let defaultMatParams = {
     transmission:0.99,
     ior:1.5,
     thickness:0.2,
-    roughness:0.3,
+    roughness:0.5,
 };
 
 
@@ -71,7 +72,8 @@ class HopfTorus{
 
         this.coordCurve = coordCurve;
         this.res = 256;
-        this.rad = 0.045;
+        this.rad = 0.008;
+            //0.045;
             //0.018;
             //0.0075;
 

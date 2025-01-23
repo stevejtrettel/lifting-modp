@@ -8,16 +8,16 @@ let curveArea = 4*Math.PI*tau.x;
 let curveLength = 4*Math.PI*tau.y;
 
 
-//CURVE FOR THE HEX TORUS
+
 let coordCurve = function(t){
 
-    // let a =0.1179;
-    // let b =3.89;
-    // let n = 7;
-
-    let a =0.222;
-    let b =1.31;
+    let a =0.1179;
+    let b =3.89;
     let n = 7;
+
+    // let a =0.222;
+    // let b =1.31;
+    // let n = 7;
 
     return {
         phi: Math.PI/2 + a*b*Math.cos(n*t),
