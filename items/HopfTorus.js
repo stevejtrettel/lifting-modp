@@ -314,7 +314,8 @@ class HopfTorus{
         let sphereCurve = function(t){
             let P = sphCoords(coordCurve(t));
             //display as x, z, -y
-            return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
+           return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
+           // return P.multiplyScalar(0.5);
         }
         let curve = this.getCurveMesh(sphereCurve, color, radius,true)
         base.add(curve);
