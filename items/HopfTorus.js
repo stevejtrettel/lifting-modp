@@ -6,9 +6,9 @@ import {
     Vector2,
     Vector3,
     Vector4,
-    Color,
     SphereGeometry,
-    DoubleSide, TextureLoader,
+    DoubleSide,
+    Group,
 } from "three";
 
 import {VarTubeGeometry} from "./VarTubeGeometry";
@@ -72,22 +72,19 @@ class HopfTorus{
 
         this.coordCurve = coordCurve;
         this.res = 256;
-        this.rad = 0.008;
-            //0.045;
-            //0.018;
-            //0.0075;
 
 
-        let pointGeom = new SphereGeometry(2.*this.rad);
-        let pointMat = new MeshPhysicalMaterial({color:0x8c1a0f,roughness:0.1,metalness:0,clearcoat:1});
-        this.pointMesh = new Mesh(pointGeom, pointMat);
-
-        this.sphereCurve = function(t){
-            let P = sphCoords(coordCurve(t));
-            //display as x, z, -y
-            return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
+        //now build the geometry of the hopf surface:
+        // map from R2 to R4, in the 3 sphere
+        this.surface = function(s,t){
+            let angles = coordCurve(t);
+            let phi = angles.phi;
+            let theta = angles.theta;
+            return  toroidalCoords(theta+s,s,phi/2);
         }
 
+
+        //auxiliary functions for building the actual isometry
         let fudgeFactor = function(t){
             let dt = 0.00025;
             //do a riemann sum up to t:
@@ -137,14 +134,6 @@ class HopfTorus{
         //save it
         this.inverseArc = inverseArc;
 
-        this.horizontalLiftCurve = function(t){
-            let angles = coordCurve(t);
-            let phi = angles.phi;
-            let theta = angles.theta;
-            let f = fudgeFactor(t);
-            let P = toroidalCoords(theta-f,-f,phi/2);
-            return stereoProj(P);
-        }
 
         let isometricImage = function(pt){
             //take a point (u,v) in the plane and find its image on the torus!
@@ -162,24 +151,10 @@ class HopfTorus{
         }
         this.isometricImage = isometricImage;
 
-        this.liftEdge = function(t){
-            //point along the line connecting (0,0) to (A/2,L/2)
-            let pt = new Vector2(t*area/(4*Math.PI), t*length/(4*Math.PI));
-            //now apply isometry
-            return isometricImage(pt);
-        }
 
-        //now build the geometry of the hopf surface:
-        // map from R2 to R4, in the 3 sphere
-        this.surface = function(s,t){
-                let angles = coordCurve(t);
-                let phi = angles.phi;
-                let theta = angles.theta;
-                return  toroidalCoords(theta+s,s,phi/2);
-        }
     }
 
-    getCurveMesh(curveFn, color=0x25178f,closed=false){
+    getCurveMesh(curveFn, color=0x25178f, radius = 0.01,closed=false){
 
         //the curve mesh
         let curvePts = [];
@@ -188,7 +163,7 @@ class HopfTorus{
             let t = 2.*Math.PI * i/this.res;
             let pt = curveFn(t);
             curvePts.push(pt);
-            let r = this.rad*(1+pt.lengthSq());
+            let r = radius*(1+pt.lengthSq());
             radiusValues.push(new Vector3(r,r,r));
         }
 
@@ -219,7 +194,7 @@ class HopfTorus{
 
     }
 
-    getFiberMesh(angles,color=0x8f2117){
+    getFiberMesh(angles,color=0x8f2117, radius=0.01){
         //given theta and phi, compute the fiber of the hopf map thru this point of S2
         let theta = angles.theta;
         let phi = angles.phi;
@@ -235,13 +210,13 @@ class HopfTorus{
         //this is a curve we can call with respect to arclength!
         let curve  = new CatmullRomCurve3(curvePts);
         let mat = new MeshPhysicalMaterial({color:color});
-        let curveGeom = new TubeGeometry(curve, 3.*this.res, this.rad/4., 8,true);
+        let curveGeom = new TubeGeometry(curve, 3.*this.res, radius, 8,true);
         return new Mesh(curveGeom, mat);
 
     }
 
 
-    getEdgeTranslate(x,color=0xa32017){
+    getEdgeTranslate(x,color=0xa32017,radius=0.01){
 
         //x is a PERCENTAGE OF ALL THE WAY ALONG THE EDGE: IN (0,1)
 
@@ -262,11 +237,11 @@ class HopfTorus{
             return isometricImage(pt);
         }
 
-        return this.getCurveMesh(curve,color,true);
+        return this.getCurveMesh(curve,color,radius,true);
     }
 
 
-    getFiberTranslate(x,color=0x161ba8){
+    getFiberTranslate(x,color=0x161ba8,radius=0.01){
 
         //x is a PERCENTAGE OF ALL THE WAY ALONG THE EDGE: IN (0,1)
 
@@ -284,26 +259,67 @@ class HopfTorus{
             return isometricImage(pt);
         }
 
-        return this.getCurveMesh(curve,color,true);
+        return this.getCurveMesh(curve,color,radius,true);
 
     }
 
 
 
-    getPointMesh(p){
+    getPointOnLatticeMesh(fiberOffset,edgeOffset,color=0x8c1a0f,radius=0.01){
+
+    }
+
+
+    //takes in a point p=(x,y) in the plane
+    getPointMesh(p, color=0x8c1a0f, radius =0.01){
         //p is mathematica input [x,y] in the domain spanned by 1 and tau.
         let P = new Vector2(p[0],p[1]).multiplyScalar(2.*Math.PI);
 
         let pt = this.isometricImage(P);
         let r2 = pt.lengthSq();
 
-        let mesh = this.pointMesh.clone();
-        mesh.scale.set(1+r2,1+r2,1+r2);
+        let pointGeom = new SphereGeometry(radius*(1+r2));
+        let pointMat = new MeshPhysicalMaterial({color:color,roughness:0.1,metalness:0,clearcoat:1});
+        let mesh = new Mesh(pointGeom,pointMat)
         mesh.position.set(pt.x,pt.y,pt.z);
-
         return mesh;
     }
 
+
+    getBaseSphere(color=0xa32017,radius=0.01){
+
+        let base = new Group();
+
+        //make the sphere.
+        //ITS A TINY SPHERE: RADIUS 1/2
+        let sphGeom = new SphereGeometry(0.5);
+        let sphMat = new MeshPhysicalMaterial({
+            color: 0xffffff,
+            metalness:0,
+            roughness:0.3,
+            transparent:true,
+            opacity:1,
+            transmission:0.95,
+            ior:1.5,
+            thickness:1,
+        });
+        const sph = new Mesh(sphGeom,sphMat);
+        base.add(sph);
+
+
+        //make curve
+        let coordCurve = this.coordCurve;
+        let sphereCurve = function(t){
+            let P = sphCoords(coordCurve(t));
+            //display as x, z, -y
+            return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
+        }
+        let curve = this.getCurveMesh(sphereCurve, color=color, radius = radius,closed=true)
+        base.add(curve);
+
+        return base;
+
+    }
 
 
 }

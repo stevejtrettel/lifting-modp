@@ -19,13 +19,6 @@ class VarTubeGeometry extends BufferGeometry {
 
         this.type = 'TubeGeometry';
 
-        // let radii;
-        // let pts = [];
-        // for (let i = 0; i < radiusValues.length; i++) {
-        //     pts.push(new Vector3(i / radiusValues.length, radiusValues[i], 0));
-        // }
-        // radii = new CatmullRomCurve3(pts, false);
-
         this.parameters = {
             path: path,
             tubularSegments: tubularSegments,
