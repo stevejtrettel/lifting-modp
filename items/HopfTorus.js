@@ -294,14 +294,16 @@ class HopfTorus{
         //ITS A TINY SPHERE: RADIUS 1/2
         let sphGeom = new SphereGeometry(0.5);
         let sphMat = new MeshPhysicalMaterial({
-            color: 0xffffff,
+            color: 0xc9eaff,
+                //0xffffff,
             metalness:0,
             roughness:0.3,
             transparent:true,
             opacity:1,
             transmission:0.95,
-            ior:1.5,
+            ior:1.4,
             thickness:1,
+            clearcoat:1,
         });
         const sph = new Mesh(sphGeom,sphMat);
         base.add(sph);
@@ -314,7 +316,7 @@ class HopfTorus{
             //display as x, z, -y
             return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
         }
-        let curve = this.getCurveMesh(sphereCurve, color=color, radius = radius,closed=true)
+        let curve = this.getCurveMesh(sphereCurve, color, radius,true)
         base.add(curve);
 
         return base;

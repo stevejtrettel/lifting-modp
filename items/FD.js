@@ -39,6 +39,7 @@ class FD{
             color:color,
             roughness:0.2,
             metalness:0,
+            clearcoat:1,
         });
         return new Mesh(geometry, mat);
     }
