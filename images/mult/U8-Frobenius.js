@@ -78,7 +78,7 @@ frob.add(circle.getRod(ang,3*ang,greenColor,0.025));
 //path for the fixed point 1
 let f1 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(1.5+0.2*Math.sin(t),0,0.2*Math.cos(t))
+    return new Vector3(1.+0.2*Math.sin(t),0,0.2*Math.cos(t))
 }
 let fix1 = circle.getCurve(f1,greenColor);
 frob.add(fix1);
@@ -86,7 +86,7 @@ frob.add(fix1);
 //path for the fixed point -1
 let f2 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(-1.5+0.2*Math.sin(t),0,0.2*Math.cos(t));
+    return new Vector3(-1.+0.2*Math.sin(t),0,0.2*Math.cos(t));
 }
 let fix2 = circle.getCurve(f2,greenColor);
 frob.add(fix2);
