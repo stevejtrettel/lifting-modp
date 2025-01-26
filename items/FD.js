@@ -7,7 +7,7 @@ import {
     TubeGeometry,
     Vector2,
     Vector3,
-    SphereGeometry
+    SphereGeometry, Group
 } from "three";
 
 
@@ -21,14 +21,14 @@ const defaultProps = {
 
 
 class FD{
-    constructor(tau) {
+    constructor(tau,scale=1) {
 
-        this.width = 2.*Math.PI;
+        this.width = 2.*Math.PI*scale;
         this.tau = tau.multiplyScalar(this.width);
 
     }
 
-    getSurfaceMesh(color = 0x6f7aab){
+    getParallelogram(color = 0x6f7aab){
         const geometry = new BoxGeometry(1,1,0.1);
         geometry.scale(this.width,this.tau.y,1);
         geometry.translate(this.width/2,this.tau.y/2,0.05);
@@ -40,6 +40,26 @@ class FD{
             roughness:0.2,
             metalness:0,
             clearcoat:1,
+        });
+        return new Mesh(geometry, mat);
+    }
+
+    getGlassParallelogram(color = 0xc9eaff){
+        const geometry = new BoxGeometry(1,1,0.1);
+        geometry.scale(this.width,this.tau.y,1);
+        geometry.translate(this.width/2,this.tau.y/2,0.05);
+        const matrix = new Matrix4();
+        matrix.makeShear(0, 0, this.tau.x/this.tau.y, 0, 0,0);
+        geometry.applyMatrix4(matrix);
+        const mat = new MeshPhysicalMaterial({
+            color : color,
+            transparent:true,
+            clearcoat:1,
+            opacity:1,
+            transmission:0.9,
+            ior:1.5,
+            thickness:1,
+            roughness:0.2,
         });
         return new Mesh(geometry, mat);
     }
@@ -92,13 +112,13 @@ class FD{
     }
 
 
-    getPointOnLatticeMesh(fiberOffset=0,edgeOffset=0,color = 0x8c1a0f,radius=0.01){
+    getPointLattice(fiberOffset=0,edgeOffset=0,color = 0x8c1a0f,radius=0.01){
 
         let xOffsetVec = new Vector3(fiberOffset,0,0).multiplyScalar(this.width);
         let yOffsetVec = new Vector3(this.tau.x,this.tau.y,0).multiplyScalar(edgeOffset);
         let pos = xOffsetVec.add(yOffsetVec);
 
-        const geom = new SphereGeometry(2.25*radius);
+        const geom = new SphereGeometry(radius);
         const mat = new MeshPhysicalMaterial({
             color:color,
             roughness:0.2,
@@ -114,7 +134,7 @@ class FD{
 
 
     //point using p=(x,y) coordinates in the plane
-    getPointMesh(p, color=0x8c1a0f, radius =0.01){
+    getPointXY(p, color=0x8c1a0f, radius =0.01){
         //p is mathematica input [x,y] in the domain spanned by 1 and tau.
         let P = new Vector2(p[0],p[1]).multiplyScalar(this.width);
 
@@ -126,6 +146,31 @@ class FD{
 
     }
 
+
+
+    getGridlines(N, edgeColor, vertexColor, radius){
+
+        let lines = new Group();
+
+        //get curves on the surface:
+        for(let i=0; i<N+1; i++){
+            let horiz = this.getFiberTranslate(i/N,edgeColor,radius);
+            let vert = this.getEdgeTranslate(i/N,edgeColor,radius);
+            lines.add(horiz);
+            lines.add(vert);
+        }
+
+        //get vertices to go with these
+        for(let i=0; i<N+1; i++){
+            for(let j=0; j<N+1; j++){
+                let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
+                lines.add(pt);
+            }
+        }
+
+        return lines;
+
+    }
 
 }
 

@@ -48,20 +48,21 @@ let area1 = 4*Math.PI/3;
 let length1 =  4*Math.PI/3*Math.sqrt(2);
 let hopf1 = new HopfTorus(getCurve(0,0,0,Math.PI/2+0.7),length1,area1);
 
+let base1 = hopf1.getBaseSphere(0xe86c43);
+base1.position.set(2*dist,0,0);
+scene.add(base1);
+
 let torus1 = hopf1.getSurfaceMesh({color: 0xe86c43, metalness:0, roughness:0.3,clearcoat:true});
 torus1.scale.set(0.28,0.28,0.28);
-
-// torus1.rotateX(Math.PI/2);
-// torus1.position.set(2*dist,dist,0);
-torus1.position.set(2*dist,-0.25,0.25);
+torus1.rotateX(Math.PI/2);
+torus1.position.set(2*dist,dist,0);
 scene.add(torus1);
 
 let fd1 = new FD(tau1);
-let parallel1 = fd1.getSurfaceMesh(0xe86c43);
-parallel1.scale.set(0.085,0.085,0.085);
+let parallel1 = fd1.getParallelogram(0xe86c43);
+parallel1.scale.set(0.1,0.1,0.1);
 parallel1.rotateX(Math.PI/2);
-parallel1.rotateZ(Math.PI/2);
-parallel1.position.set(2*dist+0.5,-0.6,-dist);
+parallel1.position.set(2*dist-0.25,-0.6,-1.5);
 scene.add(parallel1);
 
 
@@ -76,18 +77,21 @@ let area2 = 2*Math.PI;
 let length2 = 2*Math.PI;
 let hopf2 = new HopfTorus(getCurve(0,0,0,Math.PI/2),length2,area2);
 
+let base2 = hopf2.getBaseSphere(0xffcc40);
+base2.position.set(dist,0,0);
+scene.add(base2);
+
 let torus2 = hopf2.getSurfaceMesh({color: 0xffcc40, metalness:0, roughness:0.3,clearcoat:true});
 torus2.scale.set(0.2,0.2,0.2);
-// torus2.rotateX(Math.PI/2);
-// torus2.position.set(dist,dist,0);
-torus2.position.set(dist,-0.25,0.25);
+torus2.rotateX(Math.PI/2);
+torus2.position.set(dist,dist,0);
 scene.add(torus2);
 
 let fd2 = new FD(tau2);
-let parallel2 = fd2.getSurfaceMesh(0xffcc40);
+let parallel2 = fd2.getParallelogram(0xffcc40);
 parallel2.scale.set(0.1,0.1,0.1);
 parallel2.rotateX(Math.PI/2);
-parallel2.position.set(dist-0.25,-0.6,-dist);
+parallel2.position.set(dist-0.25,-0.6,-1.5);
 scene.add(parallel2);
 
 
@@ -96,20 +100,23 @@ let area3 = 4*Math.PI*tau3.x;
 let length3 = 4*Math.PI*tau3.y;
 let hopf3 = new HopfTorus(getCurve(0.276,1.8,3,Math.PI/2),length3,area3);
 
+let base3 = hopf3.getBaseSphere(0x43bf4b);
+base3.position.set(0,0,0);
+scene.add(base3);
+
 
 let torus3 = hopf3.getSurfaceMesh({color: 0x43bf4b, metalness:0, roughness:0.3,clearcoat:true});
 torus3.scale.set(0.15,0.15,0.15);
-// torus3.rotateX(Math.PI/2);
-// torus3.position.set(0,dist,0);
-torus3.position.set(0,-0.25,0.25);
+torus3.rotateX(Math.PI/2);
+torus3.position.set(0,dist,0);
 scene.add(torus3);
 
 let fd3 = new FD(tau3);
-let parallel3 = fd3.getSurfaceMesh(0x43bf4b);
-parallel3.scale.set(0.11,0.11,0.11);
+let parallel3 = fd3.getParallelogram(0x43bf4b);
+parallel3.scale.set(0.1,0.1,0.1);
 parallel3.rotateX(Math.PI/2);
 parallel3.rotateY(Math.PI);
-parallel3.position.set(0.5,-0.6,-dist);
+parallel3.position.set(0.5,-0.6,-1.5);
 scene.add(parallel3);
 
 
@@ -120,21 +127,23 @@ let area4 = 4*Math.PI*tau4.x;
 let length4 = 4*Math.PI*tau4.y;
 let hopf4 = new HopfTorus(getCurve(0.1179,3.89,7,Math.PI/2),length4,area4);
 
+let base4 = hopf4.getBaseSphere(0x4287f5);
+base4.position.set(-dist,0,0);
+scene.add(base4);
 
 let torus4 = hopf4.getSurfaceMesh({color: 0x4287f5, metalness:0, roughness:0.3,clearcoat:true});
 torus4.scale.set(0.15,0.15,0.15);
-// torus4.rotateX(Math.PI/2);
-// torus4.position.set(-dist,dist,0);
-torus4.position.set(-dist,-0.25,0.25);
+torus4.rotateX(Math.PI/2);
+torus4.position.set(-dist,dist,0);
 scene.add(torus4);
 
 
 let fd4 = new FD(tau4);
-let parallel4 = fd4.getSurfaceMesh(0x4287f5);
-parallel4.scale.set(0.085,0.085,0.085);
+let parallel4 = fd4.getParallelogram(0x4287f5);
+parallel4.scale.set(0.09,0.09,0.09);
 parallel4.rotateX(Math.PI/2);
 parallel4.rotateY(Math.PI);
-parallel4.position.set(-dist+0.5,-0.6,-dist);
+parallel4.position.set(-dist+0.5,-0.6,-1.5);
 scene.add(parallel4);
 
 
@@ -144,21 +153,24 @@ let area5 = 4*Math.PI*tau5.x;
 let length5 = 4*Math.PI*tau5.y;
 let hopf5 = new HopfTorus(getCurve(0.07,5.705,11,Math.PI/2),length5,area5);
 
+let base5 = hopf5.getBaseSphere(0xa83cf0);
+base5.position.set(-2*dist,0,0);
+scene.add(base5);
+
 
 let torus5 = hopf5.getSurfaceMesh({color: 0xa83cf0, metalness:0, roughness:0.3,clearcoat:true});
 torus5.scale.set(0.155,0.155,0.155);
-// torus5.rotateX(Math.PI/2);
-// torus5.position.set(-2*dist,dist,0);
-torus5.position.set(-2*dist,-0.25,0.25);
+torus5.rotateX(Math.PI/2);
+torus5.position.set(-2*dist,dist,0);
 scene.add(torus5);
 
 
 let fd5 = new FD(tau5);
-let parallel5 = fd5.getSurfaceMesh(0xa83cf0);
+let parallel5 = fd5.getParallelogram(0xa83cf0);
 parallel5.scale.set(0.075,0.075,0.075);
 parallel5.rotateX(Math.PI/2);
 parallel5.rotateY(Math.PI);
-parallel5.position.set(-2*dist+0.5,-0.6,-dist);
+parallel5.position.set(-2*dist+0.5,-0.6,-1.5);
 scene.add(parallel5);
 
 
