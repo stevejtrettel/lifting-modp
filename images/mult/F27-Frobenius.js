@@ -22,83 +22,12 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-
+import Grid3D from "../../items/Grid3D";
 
 // init scene and objects, and lights
 //--------------------------------------------
 
 const scene = new Scene();
-
-function toVec3(p){
-    return new Vector3(p[0],p[1],p[2]);
-}
-
-function createGlassHex(col){
-    return new MeshPhysicalMaterial({
-        color : col,
-        transparent:true,
-        clearcoat:1,
-        opacity:1,
-        transmission:0.9,
-        ior:1.5,
-        thickness:1,
-        roughness:0.2,
-    });
-}
-
-function createOpaqueHex(col){
-    return new MeshPhysicalMaterial({
-        color : col,
-        metalness:0,
-        roughness:0.2,
-        clearcoat:1,
-    });
-}
-
-
-
-
-function createRodMesh(start,end,color,rad=0.02){
-
-    let dir = toVec3(end).sub(toVec3(start));
-    let st =toVec3(start);
-
-    let pts=[];
-    for(let i=0; i<99;i++){
-        let t = i/100;
-        let p = st.clone().add(dir.clone().multiplyScalar(t))
-        pts.push(p);
-    }
-    const path = new CatmullRomCurve3(pts);
-    const rodGeom = new TubeGeometry(path,64,rad)
-    return new Mesh(rodGeom,createGlassHex(color));
-
-}
-
-
-function createSphere(pos,color,rad=0.25){
-
-    let sphGeom = new SphereGeometry(rad);
-    let mesh = new Mesh(sphGeom,createOpaqueHex(color));
-    mesh.position.set(pos[0],pos[1],pos[2]);
-    return mesh;
-
-}
-
-
-function createCurveMesh(fn,color,rad=0.05){
-
-    let pts = [];
-    for(let i=0; i<100; i++){
-        let t = i/99;
-        pts.push(fn(t));
-    }
-
-    let path = new CatmullRomCurve3(pts);
-    let curveGeom = new TubeGeometry(path,64,rad);
-    return new Mesh(curveGeom, createGlassHex(color));
-}
-
 
 //color scheme
 const glassColor =0xc9eaff;
@@ -107,47 +36,29 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
-//add the points to the scene:
+let grid = new Grid3D();
+
+//the background additive structure grid
+let additiveGrid = grid.getGridLines(1);
+scene.add(additiveGrid);
 
 
-
+//the nonzero points of the variety
+let points = new Group();
+scene.add(points);
 for(let i=-1;i<2;i++){
-    for(let j=-1; j<2; j++){
-        for(let k=-1; k<2; k++) {
-
-            if (i == 0 && j == 0 && k == 0) {
-                //do nothing
-            } else {
-                scene.add(createSphere([i, j, k], redColor,0.15));
+    for(let j=-1;j<2;j++){
+        for(let k=-1;k<2;k++) {
+            if (!(i == 0 && j == 0 && k == 0)) {
+                let element = grid.getVertex([i, j, k]);
+                points.add(element);
             }
         }
     }
 }
 
-
-
-
-
-
-//add the grid in the background
-for(let n=-1; n<2; n++){
-    for(let m=-1; m<2; m++){
-        let xRod = createRodMesh([-1.5, n,m], [1.5, n,m], glassColor,0.01);
-        let yRod = createRodMesh([n, -1.5,m], [n, 1.5,m], glassColor,0.01);
-        let zRod = createRodMesh([n,m, -1.5], [n, m,1.5], glassColor,0.01);
-        scene.add(xRod);
-        scene.add(yRod);
-        scene.add(zRod);
-    }
-}
-
-//add the origin to background grid
-const origin = createSphere([0,0,0], 0x000000,0.05);
-scene.add(origin);
-
-
-
-
+// //the origin
+//  scene.add(grid.getVertex([0,0],0x000000,0.05));
 
 
 
@@ -156,181 +67,102 @@ scene.add(origin);
 //frobenius map x->x^3 has 1 fixed points (+-1) and eight 3-cycles
 // (they are in four groups, each  negative of the other)
 //each group has a LONG DIAGONAL as the last connection of the triangle, which we will have to render separately
+//the orbits are set up so the long diagonal connects the START to the END of the list
 
-const o1 = [[1,-1,1],[1,0,0], [1,1,1]];
-const o2 = [[-1,1,-1],[-1,0,0], [-1,-1,-1]];
-//the associated diagonals
-const d1 = [[1,-1,1], [1,1,1]];
-const d2 = [[-1,1,-1], [-1,-1,-1]];
-
-const o3 = [[0,1,1],[0,1,0], [0,1,-1]];
-const o4 =  [[0,-1,-1],[0,-1,0], [0,-1,1]];
-//the associated diagonals
-const d3 = [[0,1,1],[0,1,-1]];
-const d4 = [[0,-1,-1],[0,-1,1]];
-
-const o5 = [[1,-1,-1],[1,0,1],[1,1,-1]];
-const o6 = [[-1,1,1],[-1,0,-1],[-1,-1,1]];
-//the associated diagonals
-const d5 = [[1,-1,-1],[1,1,-1]];
-const d6 = [[-1,1,1],[-1,-1,1]];
-
-const o7 = [[1,-1,0],[1,0,-1],[1,1,0]];
-const o8 = [[-1,1,0],[-1,0,1],[-1,-1,0]];
-//the associated diagonals
-const d7 = [[1,-1,0],[1,1,0]];
-const d8 = [[-1,1,0],[-1,-1,0]];
-
-
-//ORBIT 1
-for(let i=0; i<o1.length-1; i++){
-    scene.add(createRodMesh(o1[i],o1[i+1],blueColor,0.025));
-}
-//and the diagonal
-let od1 = function(t){
-    let start = toVec3(d1[0]);
-    let end = toVec3(d1[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
-    return diag;
-}
-scene.add(createCurveMesh(od1,blueColor,0.025));
-
-
-//ORBIT 2
-for(let i=0; i<o2.length-1; i++){
-    scene.add(createRodMesh(o2[i],o2[i+1],blueColor,0.025));
-}
-let od2 = function(t){
-    let start = toVec3(d2[0]);
-    let end = toVec3(d2[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
-    return diag;
-}
-scene.add(createCurveMesh(od2,blueColor,0.025));
+const frob = new Group();
+scene.add(frob);
 
 
 
-//ORBIT 3
-for(let i=0; i<o3.length-1; i++){
-    scene.add(createRodMesh(o3[i],o3[i+1],blueColor,0.025));
-}
-let od3 = function(t){
-    let start = toVec3(d3[0]);
-    let end = toVec3(d3[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0.3*Math.sin(Math.PI*t)),0);
-    return diag;
-}
-scene.add(createCurveMesh(od3,blueColor,0.025));
-
-
-//ORBIT 4
-for(let i=0; i<o4.length-1; i++){
-    scene.add(createRodMesh(o4[i],o4[i+1],blueColor,0.025));
-}
-let od4 = function(t){
-    let start = toVec3(d4[0]);
-    let end = toVec3(d4[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,-0.3*Math.sin(Math.PI*t)),0);
-    return diag;
-}
-scene.add(createCurveMesh(od4,blueColor,0.025));
-
-
-
-//ORBIT 5
-for(let i=0; i<o5.length-1; i++){
-    scene.add(createRodMesh(o5[i],o5[i+1],blueColor,0.025));
-}
-let od5 = function(t){
-    let start = toVec3(d5[0]);
-    let end = toVec3(d5[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
-    return diag;
-}
-scene.add(createCurveMesh(od5,blueColor,0.025));
-
-
-
-//ORBIT 6
-for(let i=0; i<o6.length-1; i++){
-    scene.add(createRodMesh(o6[i],o6[i+1],blueColor,0.025));
-}
-let od6 = function(t){
-    let start = toVec3(d6[0]);
-    let end = toVec3(d6[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
-    return diag;
-}
-scene.add(createCurveMesh(od6,blueColor,0.025));
-
-
-//ORBIT 7
-for(let i=0; i<o7.length-1; i++){
-    scene.add(createRodMesh(o7[i],o7[i+1],blueColor,0.025));
-}
-let od7 = function(t){
-    let start = toVec3(d7[0]);
-    let end = toVec3(d7[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
-    return diag;
-}
-scene.add(createCurveMesh(od7,blueColor,0.025));
-
-
-//ORBIT 8
-for(let i=0; i<o8.length-1; i++){
-    scene.add(createRodMesh(o8[i],o8[i+1],blueColor,0.025));
-}
-let od8 = function(t){
-    let start = toVec3(d8[0]);
-    let end = toVec3(d8[1]);
-    let dir = end.clone().sub(start);
-    let diag = start.add(dir.multiplyScalar(t));
-    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
-    return diag;
-}
-scene.add(createCurveMesh(od8,blueColor,0.025));
-
-
-
-//the fixed point 1
-//path for the fixed point 1
-let fixPos = function(s){
+//fixed point 1
+let fix1 = function(s){
     let t = 2*Math.PI*s;
     let circ = new Vector3(0,0.2*Math.sin(t),0.2*Math.cos(t));
     circ.add(new Vector3(0,0,1.25));
     return circ;
 }
-scene.add(createCurveMesh(fixPos,blueColor,0.025));
+frob.add(grid.getCurve(fix1,greenColor));
 
-//path for the fixed point -1
-let fixNeg = function(s){
+//fixed point 2
+let fix2 = function(s){
     let t = 2*Math.PI*s;
     let circ = new Vector3(0,0.2*Math.sin(t),0.2*Math.cos(t));
     circ.add(new Vector3(0,0,-1.25));
     return circ;
 }
-scene.add(createCurveMesh(fixNeg,blueColor,0.025));
+frob.add(grid.getCurve(fix2,greenColor));
 
 
-//the fixed point -1
+//orbit1
+const o1 = [[1,-1,1],[1,0,0], [1,1,1]];
+frob.add(grid.getRod(o1[0],o1[1],greenColor));
+frob.add(grid.getRod(o1[1],o1[2],greenColor));
+frob.add(grid.getBentRod(o1[2],o1[0],new Vector3(0,0,-0.3),greenColor));
+
+//orbit2
+const o2 = [[-1,1,-1],[-1,0,0], [-1,-1,-1]];
+frob.add(grid.getRod(o2[0],o2[1],greenColor));
+frob.add(grid.getRod(o2[1],o2[2],greenColor));
+frob.add(grid.getBentRod(o2[2],o2[0],new Vector3(0,0,0.3),greenColor));
+
+
+//orbit3
+const o3 = [[0,1,1],[0,1,0], [0,1,-1]];
+frob.add(grid.getRod(o3[0],o3[1],greenColor));
+frob.add(grid.getRod(o3[1],o3[2],greenColor));
+frob.add(grid.getBentRod(o3[2],o3[0],new Vector3(0,0.3,0),greenColor));
+
+//orbit4
+const o4 = [[0,-1,-1],[0,-1,0], [0,-1,1]];
+frob.add(grid.getRod(o4[0],o4[1],greenColor));
+frob.add(grid.getRod(o4[1],o4[2],greenColor));
+frob.add(grid.getBentRod(o4[2],o4[0],new Vector3(0,-0.3,0),greenColor));
+
+
+//orbit5
+const o5 = [[1,-1,-1],[1,0,1],[1,1,-1]];
+// frob.add(grid.getRod(o5[0],o5[1]));
+// frob.add(grid.getRod(o5[1],o5[2]));
+frob.add(grid.getBentRod(o5[0],o5[1],new Vector3(0.3,0,0),greenColor));
+frob.add(grid.getBentRod(o5[1],o5[2],new Vector3(0.3,0,0),greenColor));
+frob.add(grid.getBentRod(o5[2],o5[0],new Vector3(-0.3,0,0),greenColor));
+
+//orbit6
+const o6 = [[-1,1,1],[-1,0,-1],[-1,-1,1]];
+// frob.add(grid.getRod(o6[0],o6[1]));
+// frob.add(grid.getRod(o6[1],o6[2]));
+frob.add(grid.getBentRod(o6[0],o6[1],new Vector3(-0.3,0,0),greenColor));
+frob.add(grid.getBentRod(o6[1],o6[2],new Vector3(-0.3,0,0),greenColor));
+frob.add(grid.getBentRod(o6[2],o6[0],new Vector3(0.3,0,0),greenColor));
 
 
 
+
+
+//orbit7
+const o7 = [[1,-1,0],[1,0,-1],[1,1,0]];
+frob.add(grid.getRod(o7[0],o7[1],greenColor));
+frob.add(grid.getRod(o7[1],o7[2],greenColor));
+frob.add(grid.getBentRod(o7[2],o7[0],new Vector3(0,0,-0.3),greenColor));
+
+
+//orbit8
+const o8 = [[-1,1,0],[-1,0,1],[-1,-1,0]];
+frob.add(grid.getRod(o8[0],o8[1],greenColor));
+frob.add(grid.getRod(o8[1],o8[2],greenColor));
+frob.add(grid.getBentRod(o8[2],o8[0],new Vector3(0,0,0.3),greenColor));
+
+
+
+
+
+
+
+
+
+//--------------------------------------------------------------
+//-------------THE DEFAULT STUFF--------------------------------
+//--------------------------------------------------------------
 
 
 // spot light

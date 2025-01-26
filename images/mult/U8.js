@@ -22,16 +22,14 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
+import Grid2D from "../../items/Grid2D";
+import Circle from "../../items/Circle";
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
 const scene = new Scene();
-
-
-
-//make the glass ball representing a point
 
 //color scheme
 const glassColor =0xc9eaff;
@@ -40,156 +38,28 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
-function createGlassHex(col){
-    return new MeshPhysicalMaterial({
-        color : col,
-        transparent:true,
-        clearcoat:1,
-        opacity:1,
-        transmission:0.9,
-        ior:1.5,
-        thickness:1,
-        roughness:0.2,
-    });
-}
+let circle = new Circle(1.25);
 
-
-function createPointOnCircle(ang, color,rad=0.2){
-    let p = new Vector3(Math.cos(ang),0,Math.sin(ang));
-    let geom = new SphereGeometry(rad);
-    let mat = createGlassHex(color);
-    let mesh = new Mesh(geom,mat);
-    mesh.position.set(p.x,p.y,p.z);
-    return mesh;
-}
-
-
-function createCircleArcMesh(ang0,ang1,color,rad=0.02){
-
-    let closed = false;
-    if(ang1-ang0>2*Math.PI-0.1){closed=true};
-
-    let pts = [];
-    for(let i=0; i<100; i++){
-        let t = ang0 + (ang1-ang0)*i/99;
-        pts.push(new Vector3(Math.cos(t),0,Math.sin(t)));
-    }
-
-    let path = new CatmullRomCurve3(pts,closed);
-    let arcGeom = new TubeGeometry(path,64,rad,8,closed);
-    return new Mesh(arcGeom, createGlassHex(color));
-}
-
-
-function createRodMesh(start,end,color,rad=0.02){
-
-    let dir = end.clone().sub(start);
-
-    let pts=[];
-    for(let i=11; i<90;i++){
-        let t = i/100;
-        let p = start.clone().add(dir.clone().multiplyScalar(t))
-        pts.push(p);
-    }
-    const path = new CatmullRomCurve3(pts);
-    const rodGeom = new TubeGeometry(path,64,rad)
-    return new Mesh(rodGeom,createGlassHex(color));
-
-}
-
-
-function createCurveMesh(fn,color,rad=0.05){
-
-    let pts = [];
-    for(let i=0; i<100; i++){
-        let t = i/99;
-        pts.push(fn(t));
-    }
-
-    let path = new CatmullRomCurve3(pts);
-    let curveGeom = new TubeGeometry(path,64,rad);
-    return new Mesh(curveGeom, createGlassHex(color));
-}
+//the background additive structure
+let u1 = circle.getCircle(glassColor,0.02);
+u1.position.set(0,-0.25,0);
+scene.add(u1);
 
 
 
-
-
-
-//draw the points on the unit circle
+//the nonzero points of the variety
+let points = new Group();
+scene.add(points);
 for(let i=0; i<8; i++){
-    let t = 2*Math.PI * i/8;
-    scene.add(createPointOnCircle(t,redColor));
+    let ang = i * 2*Math.PI/8;
+    points.add(circle.getVertex(ang,redColor,0.15));
 }
 
 
-// //draw the full circle
-let unitCircle = createCircleArcMesh(0,2*Math.PI,glassColor,0.07);
-unitCircle.position.set(0,-0.25,0);
- scene.add(unitCircle);
-
-//draw glass circular arcs
-// for(let i=0; i<8; i++){
-//     let start = 2*Math.PI * i/8+0.11;
-//     let end = 2*Math.PI *(i+1)/8-0.11;
-//     scene.add(createCircleArcMesh(start,end,glassColor,0.07));
-// }
-
-
-let start,end,ang;
-
-
-//draw the generators
-// for(let i=0; i<8; i++){
-//     start = 2*Math.PI * i/8+0.11;
-//     end = 2*Math.PI *(i+1)/8-0.11;
-//     scene.add(createCircleArcMesh(start,end,blueColor,0.02));
-// }
-
-
-
-
-//draw frobenius
-
-//the fixed point 1;
-let f1 = function(s){
-    let t = 2*Math.PI*s;
-    let p = new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(0.2);
-    p.x -= 1.3;
-    return p;
-}
-
-scene.add( createCurveMesh(f1,yellowColor,0.03));
-
-
-//the fixed point -1;
-let f2 = function(s){
-    let t = 2*Math.PI*s;
-    let p = new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(0.2);
-    p.x += 1.3;
-    return p;
-}
-
-scene.add( createCurveMesh(f2,yellowColor,0.03));
-
-
-//the first rod
-ang = Math.PI/4
-start = new Vector3(Math.cos(ang),0, Math.sin(ang));
-end = new Vector3(Math.cos(ang),0, -Math.sin(ang));
-scene.add(createRodMesh(start,end,yellowColor,0.03));
-
-//the second rod
-ang = Math.PI/2
-start = new Vector3(Math.cos(ang),0, Math.sin(ang));
-end = new Vector3(Math.cos(ang),0, -Math.sin(ang));
-scene.add(createRodMesh(start,end,yellowColor,0.03));
-
-//the third rod
-ang = 3*Math.PI/4
-start = new Vector3(Math.cos(ang),0, Math.sin(ang));
-end = new Vector3(Math.cos(ang),0, -Math.sin(ang));
-scene.add(createRodMesh(start,end,yellowColor,0.03));
+//the group
+//the whole circle is in order! Just draw another circle
+let group = circle.getCircle(blueColor,0.025);
+scene.add(group);
 
 
 
@@ -202,6 +72,9 @@ scene.add(createRodMesh(start,end,yellowColor,0.03));
 
 
 
+//--------------------------------------------------------------
+//-------------THE DEFAULT STUFF--------------------------------
+//--------------------------------------------------------------
 
 
 // spot light

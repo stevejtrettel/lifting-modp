@@ -22,14 +22,14 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
+import Grid2D from "../../items/Grid2D";
+import Circle from "../../items/Circle";
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
 const scene = new Scene();
-
-
 
 //color scheme
 const glassColor =0xc9eaff;
@@ -38,71 +38,43 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
+let circle = new Circle(1.25);
 
-function createGlassHex(col){
-    return new MeshPhysicalMaterial({
-        color : col,
-        transparent:true,
-        clearcoat:1,
-        opacity:1,
-        transmission:0.9,
-        ior:1.5,
-        thickness:1,
-        roughness:0.2,
-    });
-}
-
-
-function createOpaqueHex(col){
-    return new MeshPhysicalMaterial({
-        color : col,
-        roughness:0.1,
-        metalness:0,
-        clearcoat:1,
-    });
-}
-
-
-function createCircleArcMesh(ang0,ang1,color,rad=0.02){
-
-    let closed = false;
-    if(ang1-ang0>2*Math.PI-0.1){closed=true};
-
-    let pts = [];
-    for(let i=0; i<100; i++){
-        let t = ang0 + (ang1-ang0)*i/99;
-        pts.push(new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(1.5));
-    }
-
-    let path = new CatmullRomCurve3(pts,closed);
-    let arcGeom = new TubeGeometry(path,64,rad,8,closed);
-    return new Mesh(arcGeom, createGlassHex(color));
-}
+//the background additive structure
+let u1 = circle.getCircle(glassColor,0.02);
+u1.position.set(0,-0.25,0);
+scene.add(u1);
 
 
 
-
-let ptGeom = new SphereGeometry(0.12);
-let ptMat = createOpaqueHex(redColor);
-let edgeMat = createGlassHex(blueColor);
-
-
-
+//the nonzero points of the variety
+let points = new Group();
+scene.add(points);
 for(let i=0; i<26; i++){
-    let t = 2.*Math.PI *i/26;
-    let p = new Vector3(1.5*Math.cos(t),0,1.5*Math.sin(t));
-    let mesh = new Mesh(ptGeom, ptMat);
-    mesh.position.set(p.x,p.y,p.z);
-    scene.add(mesh);
+    let ang = i * 2*Math.PI/26;
+    points.add(circle.getVertex(ang,redColor,0.1));
 }
 
 
-// //draw the full circle
-let unitCircle = createCircleArcMesh(0,2*Math.PI,blueColor,0.025);
-unitCircle.position.set(0,0,0);
-scene.add(unitCircle);
+//the group
+//the whole circle is in order! Just draw another circle
+let group = circle.getCircle(blueColor,0.025);
+scene.add(group);
 
 
+
+
+
+
+
+
+
+
+
+
+//--------------------------------------------------------------
+//-------------THE DEFAULT STUFF--------------------------------
+//--------------------------------------------------------------
 
 
 // spot light

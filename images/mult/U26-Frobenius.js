@@ -23,6 +23,8 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import Grid2D from "../../items/Grid2D";
+import Circle from "../../items/Circle";
+
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -36,64 +38,107 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
-let grid = new Grid2D();
+let circle = new Circle(1.25);
 
-//the background additive structure grid
-let additiveGrid = grid.getGridLines(1);
-scene.add(additiveGrid);
+//the background additive structure
+let u1 = circle.getCircle(glassColor,0.02);
+u1.position.set(0,-0.25,0);
+scene.add(u1);
+
 
 
 //the nonzero points of the variety
 let points = new Group();
 scene.add(points);
-for(let i=-1;i<2;i++){
-    for(let j=-1;j<2;j++){
-        if(!(i==0 && j==0)){
-            let element = grid.getVertex([i,j]);
-            points.add(element);
-        }
-    }
+for(let i=0; i<26; i++){
+    let ang = i * 2*Math.PI/26;
+    points.add(circle.getVertex(ang,redColor,0.1));
 }
 
-//the origin
-// scene.add(grid.getVertex([0,0],0x000000,0.05));
+
+//FROBENIUS
+//the map x->x3 has two fixed points and eight 3-cycles
+//the 3-cycles come in pairs (one and its negative)
 
 
-//The Frobenius Map
+
+
+
+//will be useful to convert modular arithmetic to angles
+function toAng(i){
+    return 2*Math.PI/26*i;
+}
+
+let frob = new Group();
+scene.add(frob);
 
 //path for the fixed point 1
 let f1 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(1.25+0.2*Math.sin(t),0,0.2*Math.cos(t))
+    return new Vector3(1.45+0.15*Math.sin(t),0,0.15*Math.cos(t))
 }
-let orbit1 = grid.getCurve(f1,greenColor);
-scene.add(orbit1);
+let fix1 = circle.getCurve(f1,greenColor,0.02);
+frob.add(fix1);
 
 //path for the fixed point -1
 let f2 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(-1.25+0.2*Math.sin(t),0,0.2*Math.cos(t));
+    return new Vector3(-1.45+0.15*Math.sin(t),0,0.15*Math.cos(t));
 }
-let orbit2 = grid.getCurve(f2,greenColor);
-scene.add(orbit2);
-
-//path for i, -i
-let orbit3 = grid.getRod([0,1],[0,-1],greenColor,0.025);
-scene.add(orbit3);
-
-//path for for 1+i, -1+i
-let orbit4 = grid.getBentRod([1,1],[-1,1], new Vector3(0,0,0.3),greenColor,0.025);
-scene.add(orbit4);
-
-
-//path for for 1-i, -1-i
-let orbit5 = grid.getBentRod([1,-1],[-1,-1], new Vector3(0,0,-0.3),greenColor,0.025);
-scene.add(orbit5);
+let fix2 = circle.getCurve(f2,greenColor,0.02);
+frob.add(fix2);
 
 
 
+//orbit 1
+let o1 = [1,3,9];
+frob.add(circle.getRod(toAng(o1[0]),toAng(o1[1]),greenColor));
+frob.add(circle.getRod(toAng(o1[1]),toAng(o1[2]),greenColor));
+frob.add(circle.getRod(toAng(o1[2]),toAng(o1[0]),greenColor));
+
+//orbit 2
+let o2 = [-1,-3,-9];
+frob.add(circle.getRod(toAng(o2[0]),toAng(o2[1]),greenColor));
+frob.add(circle.getRod(toAng(o2[1]),toAng(o2[2]),greenColor));
+frob.add(circle.getRod(toAng(o2[2]),toAng(o2[0]),greenColor));
+
+//orbit 3
+let o3 = [2,6,18];
+frob.add(circle.getRod(toAng(o3[0]),toAng(o3[1]),greenColor));
+frob.add(circle.getRod(toAng(o3[1]),toAng(o3[2]),greenColor));
+frob.add(circle.getRod(toAng(o3[2]),toAng(o3[0]),greenColor));
+
+//orbit 4
+let o4 = [-2,-6,-18];
+frob.add(circle.getRod(toAng(o4[0]),toAng(o4[1]),greenColor));
+frob.add(circle.getRod(toAng(o4[1]),toAng(o4[2]),greenColor));
+frob.add(circle.getRod(toAng(o4[2]),toAng(o4[0]),greenColor));
 
 
+//orbit 5
+let o5 = [4,12,10];
+frob.add(circle.getRod(toAng(o5[0]),toAng(o5[1]),greenColor));
+frob.add(circle.getRod(toAng(o5[1]),toAng(o5[2]),greenColor));
+frob.add(circle.getRod(toAng(o5[2]),toAng(o5[0]),greenColor));
+
+
+//orbit 6
+let o6 = [-4,-12,-10];
+frob.add(circle.getRod(toAng(o6[0]),toAng(o6[1]),greenColor));
+frob.add(circle.getRod(toAng(o6[1]),toAng(o6[2]),greenColor));
+frob.add(circle.getRod(toAng(o6[2]),toAng(o6[0]),greenColor));
+
+//orbit 7
+let o7 = [5,15,19];
+frob.add(circle.getRod(toAng(o7[0]),toAng(o7[1]),greenColor));
+frob.add(circle.getRod(toAng(o7[1]),toAng(o7[2]),greenColor));
+frob.add(circle.getRod(toAng(o7[2]),toAng(o7[0]),greenColor));
+
+//orbit 8
+let o8 = [-5,-15,-19];
+frob.add(circle.getRod(toAng(o8[0]),toAng(o8[1]),greenColor));
+frob.add(circle.getRod(toAng(o8[1]),toAng(o8[2]),greenColor));
+frob.add(circle.getRod(toAng(o8[2]),toAng(o8[0]),greenColor));
 
 
 //--------------------------------------------------------------

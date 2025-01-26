@@ -22,12 +22,81 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import Grid2D from "../../items/Grid2D";
+
 
 // init scene and objects, and lights
 //--------------------------------------------
 
 const scene = new Scene();
+
+
+
+function createGlassHex(col){
+    return new MeshPhysicalMaterial({
+        color : col,
+        transparent:true,
+        clearcoat:1,
+        opacity:1,
+        transmission:0.9,
+        ior:1.5,
+        thickness:1,
+        roughness:0.2,
+    });
+}
+
+
+
+function createOpaqueHex(col){
+    return new MeshPhysicalMaterial({
+        color : col,
+        metalness:0,
+        roughness:0.2,
+        clearcoat:1,
+    });
+}
+
+
+
+function createRodMesh(start,end,color,rad=0.02){
+
+    let dir = new Vector3(-(end[0]-start[0]),0,end[1]-start[1]);
+    let st = new Vector3(-start[0],0,start[1]);
+
+    let pts=[];
+    for(let i=0; i<99;i++){
+        let t = i/100;
+        let p = st.clone().add(dir.clone().multiplyScalar(t))
+        pts.push(p);
+    }
+    const path = new CatmullRomCurve3(pts);
+    const rodGeom = new TubeGeometry(path,64,rad)
+    return new Mesh(rodGeom,createGlassHex(color));
+
+}
+
+
+function createSphere(pos,color,rad=0.25){
+
+    let sphGeom = new SphereGeometry(rad);
+    let mesh = new Mesh(sphGeom,createOpaqueHex(color));
+    mesh.position.set(-pos[0],0,pos[1]);
+    return mesh;
+}
+
+
+function createCurveMesh(fn,color,rad=0.05){
+
+    let pts = [];
+    for(let i=0; i<100; i++){
+        let t = i/99;
+        pts.push(fn(t));
+    }
+
+    let path = new CatmullRomCurve3(pts);
+    let curveGeom = new TubeGeometry(path,64,rad);
+    return new Mesh(curveGeom, createGlassHex(color));
+}
+
 
 //color scheme
 const glassColor =0xc9eaff;
@@ -36,69 +105,60 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
-let grid = new Grid2D();
-
-//the background additive structure grid
-let additiveGrid = grid.getGridLines(1);
-scene.add(additiveGrid);
+//add the points to the scene:
 
 
-//the nonzero points of the variety
-let points = new Group();
-scene.add(points);
+
 for(let i=-1;i<2;i++){
-    for(let j=-1;j<2;j++){
-        if(!(i==0 && j==0)){
-            let element = grid.getVertex([i,j]);
-            points.add(element);
+    for(let j=-1; j<2; j++){
+
+        if(i==0 && j== 0){
+           // scene.add(createSphere([i,j], glassColor));
         }
+        else{
+            scene.add(createSphere([i,j], redColor,0.15));
+        }
+
     }
 }
 
-//the origin
-// scene.add(grid.getVertex([0,0],0x000000,0.05));
 
 
-//The Frobenius Map
 
-//path for the fixed point 1
-let f1 = function(s){
-    let t = 2*Math.PI*s;
-    return new Vector3(1.25+0.2*Math.sin(t),0,0.2*Math.cos(t))
+
+
+//add the grid in the background
+for(let n=-1; n<2; n++){
+
+    let horizRod = createRodMesh([-1.5,n],[1.5,n],glassColor);
+    let vertRod = createRodMesh([n,-1.5],[n,1.5], glassColor);
+
+    //horizRod.position.set(0,-0.25,0);
+  //  vertRod.position.set(0,-0.25,0);
+    scene.add(horizRod);
+    scene.add(vertRod);
 }
-let orbit1 = grid.getCurve(f1,greenColor);
-scene.add(orbit1);
 
-//path for the fixed point -1
-let f2 = function(s){
-    let t = 2*Math.PI*s;
-    return new Vector3(-1.25+0.2*Math.sin(t),0,0.2*Math.cos(t));
+//add the origin to background grid
+const origin = createSphere([0,0], 0x000000,0.05);
+//origin.position.set(0,-0.25,0);
+scene.add(origin);
+
+
+
+
+
+//GENERATOR
+//add the edges to the scene
+//list of group elements in order
+const gen = [
+    [1,0], [1,1], [0,-1], [1,-1], [-1,0], [-1,-1], [0,1], [-1,1],[1,0]
+];
+for(let i=0; i<gen.length-1; i++){
+    scene.add(createRodMesh(gen[i],gen[i+1],blueColor,0.025));
 }
-let orbit2 = grid.getCurve(f2,greenColor);
-scene.add(orbit2);
-
-//path for i, -i
-let orbit3 = grid.getRod([0,1],[0,-1],greenColor,0.025);
-scene.add(orbit3);
-
-//path for for 1+i, -1+i
-let orbit4 = grid.getBentRod([1,1],[-1,1], new Vector3(0,0,0.3),greenColor,0.025);
-scene.add(orbit4);
 
 
-//path for for 1-i, -1-i
-let orbit5 = grid.getBentRod([1,-1],[-1,-1], new Vector3(0,0,-0.3),greenColor,0.025);
-scene.add(orbit5);
-
-
-
-
-
-
-
-//--------------------------------------------------------------
-//-------------THE DEFAULT STUFF--------------------------------
-//--------------------------------------------------------------
 
 
 // spot light

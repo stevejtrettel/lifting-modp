@@ -23,6 +23,8 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import Grid2D from "../../items/Grid2D";
+import Circle from "../../items/Circle";
+
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -36,59 +38,84 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
-let grid = new Grid2D();
+let circle = new Circle(1.25);
 
-//the background additive structure grid
-let additiveGrid = grid.getGridLines(1);
-scene.add(additiveGrid);
+//the background additive structure
+let u1 = circle.getCircle(glassColor,0.02);
+u1.position.set(0,-0.25,0);
+scene.add(u1);
+
 
 
 //the nonzero points of the variety
 let points = new Group();
 scene.add(points);
-for(let i=-1;i<2;i++){
-    for(let j=-1;j<2;j++){
-        if(!(i==0 && j==0)){
-            let element = grid.getVertex([i,j]);
-            points.add(element);
-        }
-    }
+for(let i=0; i<8; i++){
+    let ang = i * 2*Math.PI/8;
+    points.add(circle.getVertex(ang,redColor,0.15));
 }
 
-//the origin
-// scene.add(grid.getVertex([0,0],0x000000,0.05));
 
 
-//The Frobenius Map
+
+//FROBENIUS
+//the frobenius map x->x^3 has two fixed points and three 2-cycles
+
+let frob = new Group();
+scene.add(frob);
+
+let ang;
+
+ang = 1*2*Math.PI/8;
+frob.add(circle.getRod(ang,3*ang,greenColor,0.025));
+
+ang = 2*2*Math.PI/8;
+frob.add(circle.getRod(ang,3*ang,greenColor,0.025));
+
+ang = 5*2*Math.PI/8;
+frob.add(circle.getRod(ang,3*ang,greenColor,0.025));
 
 //path for the fixed point 1
 let f1 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(1.25+0.2*Math.sin(t),0,0.2*Math.cos(t))
+    return new Vector3(1.5+0.2*Math.sin(t),0,0.2*Math.cos(t))
 }
-let orbit1 = grid.getCurve(f1,greenColor);
-scene.add(orbit1);
+let fix1 = circle.getCurve(f1,greenColor);
+frob.add(fix1);
 
 //path for the fixed point -1
 let f2 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(-1.25+0.2*Math.sin(t),0,0.2*Math.cos(t));
+    return new Vector3(-1.5+0.2*Math.sin(t),0,0.2*Math.cos(t));
 }
-let orbit2 = grid.getCurve(f2,greenColor);
-scene.add(orbit2);
-
-//path for i, -i
-let orbit3 = grid.getRod([0,1],[0,-1],greenColor,0.025);
-scene.add(orbit3);
-
-//path for for 1+i, -1+i
-let orbit4 = grid.getBentRod([1,1],[-1,1], new Vector3(0,0,0.3),greenColor,0.025);
-scene.add(orbit4);
+let fix2 = circle.getCurve(f2,greenColor);
+frob.add(fix2);
 
 
-//path for for 1-i, -1-i
-let orbit5 = grid.getBentRod([1,-1],[-1,-1], new Vector3(0,0,-0.3),greenColor,0.025);
-scene.add(orbit5);
+
+//
+// //the fixed point 1;
+// let f1 = function(s){
+//     let t = 2*Math.PI*s;
+//     let p = new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(0.2);
+//     p.x -= 1.45;
+//     return p;
+// }
+// scene.add( createCurveMesh(f1,blueColor,0.025));
+//
+//
+// //the fixed point -1;
+// let f2 = function(s){
+//     let t = 2*Math.PI*s;
+//     let p = new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(0.2);
+//     p.x += 1.45;
+//     return p;
+// }
+// scene.add( createCurveMesh(f2,blueColor,0.025));
+//
+
+
+
 
 
 

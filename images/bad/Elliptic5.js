@@ -22,7 +22,7 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-
+import Grid2D from "../../items/Grid2D";
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -30,9 +30,15 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 const scene = new Scene();
 
 
+let grid = new Grid2D();
+
+let gridlines = grid.getGridLines(2);
+gridlines.position.set(0,-0.3,0);
+scene.add(gridlines);
+
 //make the glass ball representing a point
 
-let sphGeom = new SphereGeometry(0.25);
+let sphGeom = new SphereGeometry(0.2);
 let sphMat = new MeshPhysicalMaterial({
     color : 0xc9eaff,
         //0x8fd0ff,

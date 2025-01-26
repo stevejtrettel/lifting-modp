@@ -22,12 +22,16 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import Grid2D from "../../items/Grid2D";
+
 
 // init scene and objects, and lights
 //--------------------------------------------
 
 const scene = new Scene();
+
+
+
+//make the glass ball representing a point
 
 //color scheme
 const glassColor =0xc9eaff;
@@ -36,59 +40,157 @@ const greenColor = 0x4fbf45;
 const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
-let grid = new Grid2D();
-
-//the background additive structure grid
-let additiveGrid = grid.getGridLines(1);
-scene.add(additiveGrid);
-
-
-//the nonzero points of the variety
-let points = new Group();
-scene.add(points);
-for(let i=-1;i<2;i++){
-    for(let j=-1;j<2;j++){
-        if(!(i==0 && j==0)){
-            let element = grid.getVertex([i,j]);
-            points.add(element);
-        }
-    }
+function createGlassHex(col){
+    return new MeshPhysicalMaterial({
+        color : col,
+        transparent:true,
+        clearcoat:1,
+        opacity:1,
+        transmission:0.9,
+        ior:1.5,
+        thickness:1,
+        roughness:0.2,
+    });
 }
 
-//the origin
-// scene.add(grid.getVertex([0,0],0x000000,0.05));
+function createOpaqueHex(col){
+    return new MeshPhysicalMaterial({
+        color : col,
+        metalness:0,
+        roughness:0.2,
+        clearcoat:1,
+    });
+}
 
 
-//The Frobenius Map
 
-//path for the fixed point 1
+function createPointOnCircle(ang, color,rad=0.2){
+    let p = new Vector3(Math.cos(ang),0,Math.sin(ang)).multiplyScalar(1.25);
+    let geom = new SphereGeometry(rad);
+    let mat = createOpaqueHex(color);
+    let mesh = new Mesh(geom,mat);
+    mesh.position.set(p.x,p.y,p.z);
+    return mesh;
+}
+
+
+function createCircleArcMesh(ang0,ang1,color,rad=0.02){
+
+    let closed = false;
+    if(ang1-ang0>2*Math.PI-0.1){closed=true};
+
+    let pts = [];
+    for(let i=0; i<100; i++){
+        let t = ang0 + (ang1-ang0)*i/99;
+        pts.push(new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(1.25));
+    }
+
+    let path = new CatmullRomCurve3(pts,closed);
+    let arcGeom = new TubeGeometry(path,64,rad,8,closed);
+    return new Mesh(arcGeom, createGlassHex(color));
+}
+
+
+function createCircleRodMesh(ang0,ang1,color,rad=0.02){
+
+    let start = new Vector3(Math.cos(ang0),0,Math.sin(ang0)).multiplyScalar(1.25);
+    let end = new Vector3(Math.cos(ang1),0,Math.sin(ang1)).multiplyScalar(1.25);
+    let dir = end.clone().sub(start);
+
+    let pts=[];
+    for(let i=0; i<99;i++){
+        let t = i/100;
+        let p = start.clone().add(dir.clone().multiplyScalar(t))
+        pts.push(p);
+    }
+    const path = new CatmullRomCurve3(pts);
+    const rodGeom = new TubeGeometry(path,64,rad)
+    return new Mesh(rodGeom,createGlassHex(color));
+
+}
+
+function createRodMesh(start,end,color,rad=0.02){
+
+    let dir = end.clone().sub(start);
+
+    let pts=[];
+    for(let i=11; i<90;i++){
+        let t = i/100;
+        let p = start.clone().add(dir.clone().multiplyScalar(t))
+        pts.push(p);
+    }
+    const path = new CatmullRomCurve3(pts);
+    const rodGeom = new TubeGeometry(path,64,rad)
+    return new Mesh(rodGeom,createGlassHex(color));
+
+}
+
+
+function createCurveMesh(fn,color,rad=0.05){
+
+    let pts = [];
+    for(let i=0; i<100; i++){
+        let t = i/99;
+        pts.push(fn(t));
+    }
+
+    let path = new CatmullRomCurve3(pts);
+    let curveGeom = new TubeGeometry(path,64,rad);
+    return new Mesh(curveGeom, createGlassHex(color));
+}
+
+
+
+//draw the points on the unit circle
+for(let i=0; i<8; i++){
+    let t = 2*Math.PI * i/8;
+    scene.add(createPointOnCircle(t,redColor,0.15));
+}
+
+
+// //draw the full circle
+let unitCircle = createCircleArcMesh(0,2*Math.PI,glassColor,0.02);
+// unitCircle.position.set(0,-0.25,0);
+ scene.add(unitCircle);
+
+
+ //FROBENIUS
+
+
+let ang0,ang1;
+
+ang0 = 1*2*Math.PI/8;
+ang1 = 3*2*Math.PI/8;
+scene.add(createCircleRodMesh(ang0,ang1,blueColor,0.025));
+
+
+ang0 = 2*2*Math.PI/8;
+ang1 = 6*2*Math.PI/8;
+scene.add(createCircleRodMesh(ang0,ang1,blueColor,0.025));
+
+ang0 = 5*2*Math.PI/8;
+ang1 = 15*2*Math.PI/8;
+scene.add(createCircleRodMesh(ang0,ang1,blueColor,0.025));
+
+
+//the fixed point 1;
 let f1 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(1.25+0.2*Math.sin(t),0,0.2*Math.cos(t))
+    let p = new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(0.2);
+    p.x -= 1.45;
+    return p;
 }
-let orbit1 = grid.getCurve(f1,greenColor);
-scene.add(orbit1);
+scene.add( createCurveMesh(f1,blueColor,0.025));
 
-//path for the fixed point -1
+
+//the fixed point -1;
 let f2 = function(s){
     let t = 2*Math.PI*s;
-    return new Vector3(-1.25+0.2*Math.sin(t),0,0.2*Math.cos(t));
+    let p = new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(0.2);
+    p.x += 1.45;
+    return p;
 }
-let orbit2 = grid.getCurve(f2,greenColor);
-scene.add(orbit2);
-
-//path for i, -i
-let orbit3 = grid.getRod([0,1],[0,-1],greenColor,0.025);
-scene.add(orbit3);
-
-//path for for 1+i, -1+i
-let orbit4 = grid.getBentRod([1,1],[-1,1], new Vector3(0,0,0.3),greenColor,0.025);
-scene.add(orbit4);
-
-
-//path for for 1-i, -1-i
-let orbit5 = grid.getBentRod([1,-1],[-1,-1], new Vector3(0,0,-0.3),greenColor,0.025);
-scene.add(orbit5);
+scene.add( createCurveMesh(f2,blueColor,0.025));
 
 
 
@@ -96,9 +198,8 @@ scene.add(orbit5);
 
 
 
-//--------------------------------------------------------------
-//-------------THE DEFAULT STUFF--------------------------------
-//--------------------------------------------------------------
+
+
 
 
 // spot light
