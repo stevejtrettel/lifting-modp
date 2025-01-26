@@ -113,7 +113,7 @@ for(let i=-1;i<2;i++){
     for(let j=-1; j<2; j++){
 
         if(i==0 && j== 0){
-           // scene.add(createSphere([i,j], glassColor));
+            // scene.add(createSphere([i,j], glassColor));
         }
         else{
             scene.add(createSphere([i,j], redColor,0.15));
@@ -134,7 +134,7 @@ for(let n=-1; n<2; n++){
     let vertRod = createRodMesh([n,-2.],[n,2.], glassColor);
 
     //horizRod.position.set(0,-0.25,0);
-  //  vertRod.position.set(0,-0.25,0);
+    //  vertRod.position.set(0,-0.25,0);
     scene.add(horizRod);
     scene.add(vertRod);
 }
@@ -148,15 +148,69 @@ scene.add(origin);
 
 
 
-//GENERATOR
-//add the edges to the scene
-//list of group elements in order
-const gen = [
-    [1,0], [1,1], [0,-1], [1,-1], [-1,0], [-1,-1], [0,1], [-1,1],[1,0]
-];
-for(let i=0; i<gen.length-1; i++){
-    scene.add(createRodMesh(gen[i],gen[i+1],blueColor,0.025));
+//FROBENIUS
+
+//define the different curves we need to connect points
+
+//path for the fixed point 1
+let f1 = function(s){
+    let t = 2*Math.PI*s;
+    return new Vector3(1.25+0.2*Math.sin(t),0,0.2*Math.cos(t))
 }
+scene.add(createCurveMesh(f1,blueColor,0.025));
+
+//path for the fixed point -1
+let f2 = function(s){
+    let t = 2*Math.PI*s;
+    return new Vector3(-1.25+0.2*Math.sin(t),0,0.2*Math.cos(t));
+}
+scene.add(createCurveMesh(f2,blueColor,0.025));
+
+//path for i, -i
+let f3 = function(t){
+    let start = new Vector3(0,0,1);
+    let end = new Vector3(0,0,-1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(f3,blueColor,0.025));
+
+
+
+//path for 1+i, -1+i
+let f4 = function(t){
+    let start = new Vector3(1,0,1);
+    let end = new Vector3(-1,0,1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(f4,blueColor,0.025));
+
+//path for 1-i, -1-i
+let f5 = function(t){
+    let start = new Vector3(1,0,-1);
+    let end = new Vector3(-1,0,-1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(f5,blueColor,0.025));
+
+//
+// let frobeniusCurves = [f1,f2,f3,f4,f5];
+//
+// for(let i=0; i<frobeniusCurves.length; i++){
+//     let curve = createCurveMesh(frobeniusCurves[i],greenColor,0.025);
+//     scene.add(curve);
+// }
+//
+
+
 
 
 

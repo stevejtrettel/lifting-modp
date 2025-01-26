@@ -29,7 +29,9 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 const scene = new Scene();
 
-
+function toVec3(p){
+    return new Vector3(p[0],p[1],p[2]);
+}
 
 function createGlassHex(col){
     return new MeshPhysicalMaterial({
@@ -44,8 +46,6 @@ function createGlassHex(col){
     });
 }
 
-
-
 function createOpaqueHex(col){
     return new MeshPhysicalMaterial({
         color : col,
@@ -57,10 +57,11 @@ function createOpaqueHex(col){
 
 
 
+
 function createRodMesh(start,end,color,rad=0.02){
 
-    let dir = new Vector3(-(end[0]-start[0]),0,end[1]-start[1]);
-    let st = new Vector3(-start[0],0,start[1]);
+    let dir = toVec3(end).sub(toVec3(start));
+    let st =toVec3(start);
 
     let pts=[];
     for(let i=0; i<99;i++){
@@ -79,8 +80,9 @@ function createSphere(pos,color,rad=0.25){
 
     let sphGeom = new SphereGeometry(rad);
     let mesh = new Mesh(sphGeom,createOpaqueHex(color));
-    mesh.position.set(-pos[0],0,pos[1]);
+    mesh.position.set(pos[0],pos[1],pos[2]);
     return mesh;
+
 }
 
 
@@ -111,14 +113,14 @@ const yellowColor = 0xffd738;
 
 for(let i=-1;i<2;i++){
     for(let j=-1; j<2; j++){
+        for(let k=-1; k<2; k++) {
 
-        if(i==0 && j== 0){
-           // scene.add(createSphere([i,j], glassColor));
+            if (i == 0 && j == 0 && k == 0) {
+                //do nothing
+            } else {
+                scene.add(createSphere([i, j, k], redColor,0.15));
+            }
         }
-        else{
-            scene.add(createSphere([i,j], redColor,0.15));
-        }
-
     }
 }
 
@@ -129,34 +131,204 @@ for(let i=-1;i<2;i++){
 
 //add the grid in the background
 for(let n=-1; n<2; n++){
-
-    let horizRod = createRodMesh([-2.,n],[2.,n],glassColor);
-    let vertRod = createRodMesh([n,-2.],[n,2.], glassColor);
-
-    //horizRod.position.set(0,-0.25,0);
-  //  vertRod.position.set(0,-0.25,0);
-    scene.add(horizRod);
-    scene.add(vertRod);
+    for(let m=-1; m<2; m++){
+        let xRod = createRodMesh([-1.5, n,m], [1.5, n,m], glassColor,0.01);
+        let yRod = createRodMesh([n, -1.5,m], [n, 1.5,m], glassColor,0.01);
+        let zRod = createRodMesh([n,m, -1.5], [n, m,1.5], glassColor,0.01);
+        scene.add(xRod);
+        scene.add(yRod);
+        scene.add(zRod);
+    }
 }
 
 //add the origin to background grid
-const origin = createSphere([0,0], 0x000000,0.05);
-//origin.position.set(0,-0.25,0);
+const origin = createSphere([0,0,0], 0x000000,0.05);
 scene.add(origin);
 
 
 
 
 
-//GENERATOR
-//add the edges to the scene
-//list of group elements in order
-const gen = [
-    [1,0], [1,1], [0,-1], [1,-1], [-1,0], [-1,-1], [0,1], [-1,1],[1,0]
-];
-for(let i=0; i<gen.length-1; i++){
-    scene.add(createRodMesh(gen[i],gen[i+1],blueColor,0.025));
+
+
+//FROBENIUS
+
+//frobenius map x->x^3 has 1 fixed points (+-1) and eight 3-cycles
+// (they are in four groups, each  negative of the other)
+//each group has a LONG DIAGONAL as the last connection of the triangle, which we will have to render separately
+
+const o1 = [[1,-1,1],[1,0,0], [1,1,1]];
+const o2 = [[-1,1,-1],[-1,0,0], [-1,-1,-1]];
+//the associated diagonals
+const d1 = [[1,-1,1], [1,1,1]];
+const d2 = [[-1,1,-1], [-1,-1,-1]];
+
+const o3 = [[0,1,1],[0,1,0], [0,1,-1]];
+const o4 =  [[0,-1,-1],[0,-1,0], [0,-1,1]];
+//the associated diagonals
+const d3 = [[0,1,1],[0,1,-1]];
+const d4 = [[0,-1,-1],[0,-1,1]];
+
+const o5 = [[1,-1,-1],[1,0,1],[1,1,-1]];
+const o6 = [[-1,1,1],[-1,0,-1],[-1,-1,1]];
+//the associated diagonals
+const d5 = [[1,-1,-1],[1,1,-1]];
+const d6 = [[-1,1,1],[-1,-1,1]];
+
+const o7 = [[1,-1,0],[1,0,-1],[1,1,0]];
+const o8 = [[-1,1,0],[-1,0,1],[-1,-1,0]];
+//the associated diagonals
+const d7 = [[1,-1,0],[1,1,0]];
+const d8 = [[-1,1,0],[-1,-1,0]];
+
+
+//ORBIT 1
+for(let i=0; i<o1.length-1; i++){
+    scene.add(createRodMesh(o1[i],o1[i+1],blueColor,0.025));
 }
+//and the diagonal
+let od1 = function(t){
+    let start = toVec3(d1[0]);
+    let end = toVec3(d1[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(od1,blueColor,0.025));
+
+
+//ORBIT 2
+for(let i=0; i<o2.length-1; i++){
+    scene.add(createRodMesh(o2[i],o2[i+1],blueColor,0.025));
+}
+let od2 = function(t){
+    let start = toVec3(d2[0]);
+    let end = toVec3(d2[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(od2,blueColor,0.025));
+
+
+
+//ORBIT 3
+for(let i=0; i<o3.length-1; i++){
+    scene.add(createRodMesh(o3[i],o3[i+1],blueColor,0.025));
+}
+let od3 = function(t){
+    let start = toVec3(d3[0]);
+    let end = toVec3(d3[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0.3*Math.sin(Math.PI*t)),0);
+    return diag;
+}
+scene.add(createCurveMesh(od3,blueColor,0.025));
+
+
+//ORBIT 4
+for(let i=0; i<o4.length-1; i++){
+    scene.add(createRodMesh(o4[i],o4[i+1],blueColor,0.025));
+}
+let od4 = function(t){
+    let start = toVec3(d4[0]);
+    let end = toVec3(d4[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,-0.3*Math.sin(Math.PI*t)),0);
+    return diag;
+}
+scene.add(createCurveMesh(od4,blueColor,0.025));
+
+
+
+//ORBIT 5
+for(let i=0; i<o5.length-1; i++){
+    scene.add(createRodMesh(o5[i],o5[i+1],blueColor,0.025));
+}
+let od5 = function(t){
+    let start = toVec3(d5[0]);
+    let end = toVec3(d5[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(od5,blueColor,0.025));
+
+
+
+//ORBIT 6
+for(let i=0; i<o6.length-1; i++){
+    scene.add(createRodMesh(o6[i],o6[i+1],blueColor,0.025));
+}
+let od6 = function(t){
+    let start = toVec3(d6[0]);
+    let end = toVec3(d6[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(od6,blueColor,0.025));
+
+
+//ORBIT 7
+for(let i=0; i<o7.length-1; i++){
+    scene.add(createRodMesh(o7[i],o7[i+1],blueColor,0.025));
+}
+let od7 = function(t){
+    let start = toVec3(d7[0]);
+    let end = toVec3(d7[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(od7,blueColor,0.025));
+
+
+//ORBIT 8
+for(let i=0; i<o8.length-1; i++){
+    scene.add(createRodMesh(o8[i],o8[i+1],blueColor,0.025));
+}
+let od8 = function(t){
+    let start = toVec3(d8[0]);
+    let end = toVec3(d8[1]);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0,-0.3*Math.sin(Math.PI*t)));
+    return diag;
+}
+scene.add(createCurveMesh(od8,blueColor,0.025));
+
+
+
+//the fixed point 1
+//path for the fixed point 1
+let fixPos = function(s){
+    let t = 2*Math.PI*s;
+    let circ = new Vector3(0,0.2*Math.sin(t),0.2*Math.cos(t));
+    circ.add(new Vector3(0,0,1.25));
+    return circ;
+}
+scene.add(createCurveMesh(fixPos,blueColor,0.025));
+
+//path for the fixed point -1
+let fixNeg = function(s){
+    let t = 2*Math.PI*s;
+    let circ = new Vector3(0,0.2*Math.sin(t),0.2*Math.cos(t));
+    circ.add(new Vector3(0,0,-1.25));
+    return circ;
+}
+scene.add(createCurveMesh(fixNeg,blueColor,0.025));
+
+
+//the fixed point -1
+
 
 
 
@@ -201,7 +373,7 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(0.,-0.5,0);
+ground.position.set(0.,-1.5,0);
 scene.add(ground);
 
 // const backWall = new Mesh(

@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
+    Vector3, Group, SphereGeometry, FloatType, DoubleSide, CatmullRomCurve3,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -29,13 +29,9 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 const scene = new Scene();
 
-
-
-
-//make the glass ball representing a point
-
-let sphGeom = new SphereGeometry(0.25);
-
+function toVec3(p){
+    return new Vector3(p[0],p[1],p[2]);
+}
 
 function createGlassHex(col){
     return new MeshPhysicalMaterial({
@@ -50,34 +46,204 @@ function createGlassHex(col){
     });
 }
 
+function createOpaqueHex(col){
+    return new MeshPhysicalMaterial({
+        color : col,
+        metalness:0,
+        roughness:0.2,
+        clearcoat:1,
+    });
+}
 
-//add each orbit to the scene one by one:
-let oMat = createGlassHex(0xc9eaff);
-let pMat = createGlassHex(0xd43b3b);
 
-//the origin (not in any orbit)
-let origin = new Mesh(sphGeom,oMat);
-scene.add(origin);
 
-let pt;
-for( let i=-1; i<2; i++){
+
+function createRodMesh(start,end,color,rad=0.02){
+
+    let dir = toVec3(end).sub(toVec3(start));
+    let st =toVec3(start);
+
+    let pts=[];
+    for(let i=0; i<99;i++){
+        let t = i/100;
+        let p = st.clone().add(dir.clone().multiplyScalar(t))
+        pts.push(p);
+    }
+    const path = new CatmullRomCurve3(pts);
+    const rodGeom = new TubeGeometry(path,64,rad)
+    return new Mesh(rodGeom,createGlassHex(color));
+
+}
+
+
+function createSphere(pos,color,rad=0.25){
+
+    let sphGeom = new SphereGeometry(rad);
+    let mesh = new Mesh(sphGeom,createOpaqueHex(color));
+    mesh.position.set(pos[0],pos[1],pos[2]);
+    return mesh;
+
+}
+
+
+function createCurveMesh(fn,color,rad=0.05){
+
+    let pts = [];
+    for(let i=0; i<100; i++){
+        let t = i/99;
+        pts.push(fn(t));
+    }
+
+    let path = new CatmullRomCurve3(pts);
+    let curveGeom = new TubeGeometry(path,64,rad);
+    return new Mesh(curveGeom, createGlassHex(color));
+}
+
+
+//color scheme
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
+//add the points to the scene:
+
+
+
+for(let i=-1;i<2;i++){
     for(let j=-1; j<2; j++){
-        for(let k=-1; k<2; k++){
+        for(let k=-1; k<2; k++) {
 
-           if(new Vector3(i,j,k).length()==0.){
-               pt = new Mesh(sphGeom,oMat);
-           }
-           else{
-               pt = new Mesh(sphGeom, pMat);
-           }
-
-           let pos = new Vector3(i,j,k).divideScalar(1.5);
-            pt.position.set(pos.x,pos.y,pos.z);
-            scene.add(pt);
-
+            if (i == 0 && j == 0 && k == 0) {
+                //do nothing
+            } else {
+                scene.add(createSphere([i, j, k], redColor,0.15));
+            }
         }
     }
 }
+
+
+
+
+
+
+//add the grid in the background
+for(let n=-1; n<2; n++){
+    for(let m=-1; m<2; m++){
+        let xRod = createRodMesh([-1.5, n,m], [1.5, n,m], glassColor,0.01);
+        let yRod = createRodMesh([n, -1.5,m], [n, 1.5,m], glassColor,0.01);
+        let zRod = createRodMesh([n,m, -1.5], [n, m,1.5], glassColor,0.01);
+        scene.add(xRod);
+        scene.add(yRod);
+        scene.add(zRod);
+    }
+}
+
+//add the origin to background grid
+const origin = createSphere([0,0,0], 0x000000,0.05);
+scene.add(origin);
+
+
+
+
+
+//GENERATORS
+// // add the edges to the scene
+// // list of group elements in order
+// const gen = [
+//    [0,0,1],[0,1,0],[1,0,0],[0,1,-1],[1,-1,0],[-1,1,-1],[1,1,1],
+//     [1,-1,-1],[-1,0,-1],[0,1,1],[1,1,0],[1,1,-1],[1,0,-1],
+//     [0,0,-1],[0,-1,0],[-1,0,0],[0,-1,1],[-1,1,0],[1,-1,1],[-1,-1,-1],
+//     [-1,1,1],[1,0,1],[0,-1,-1],[-1,-1,0],[-1,-1,1],[-1,0,1],[0,0,1]
+// ];
+//
+// //draw the entire path!
+// for(let i=0; i<gen.length-1; i++){
+//     scene.add(createRodMesh(gen[i],gen[i+1],blueColor,0.025));
+// }
+
+
+//problem with this path: it has four long diagonals that cross over other rods in the path!
+//need to separate, and draw these segments separately
+const genSubList1 = [
+    [0,0,1],[0,1,0],[1,0,0],[0,1,-1],[1,-1,0],[-1,1,-1],
+];
+
+const genSubList2 = [
+    [1,-1,-1],[-1,0,-1],[0,1,1],[1,1,0],[1,1,-1],[1,0,-1],
+    [0,0,-1],[0,-1,0],[-1,0,0],[0,-1,1],[-1,1,0],[1,-1,1]
+];
+
+const genSubList3 = [
+    [-1,1,1],[1,0,1],[0,-1,-1],[-1,-1,0],[-1,-1,1],[-1,0,1],[0,0,1]
+];
+
+
+//we can render each of these separately:
+for(let i=0; i<genSubList1.length-1; i++){
+    scene.add(createRodMesh(genSubList1[i],genSubList1[i+1],blueColor,0.025));
+}
+for(let i=0; i<genSubList2.length-1; i++){
+    scene.add(createRodMesh(genSubList2[i],genSubList2[i+1],blueColor,0.025));
+}
+for(let i=0; i<genSubList3.length-1; i++){
+    scene.add(createRodMesh(genSubList3[i],genSubList3[i+1],blueColor,0.025));
+}
+
+//now just need to draw separately the four problematic edges
+
+
+//[-1,1,-1],[1,1,1]
+let f0 = function(t){
+    let start = new Vector3(-1,1,-1);
+    let end = new Vector3(1,1,1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,0.3*Math.sin(Math.PI*t),0));
+    return diag;
+}
+scene.add(createCurveMesh(f0,blueColor,0.025));
+
+
+//[1,1,1] to [1,-1,-1]
+let f1 = function(t){
+    let start = new Vector3(1,1,1);
+    let end = new Vector3(1,-1,-1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0.3*Math.sin(Math.PI*t),0,0));
+    return diag;
+}
+scene.add(createCurveMesh(f1,blueColor,0.025));
+
+
+
+//[1,-1,1],[-1,-1,-1],
+let f2 = function(t){
+    let start = new Vector3(1,-1,1);
+    let end = new Vector3(-1,-1,-1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(0,-0.3*Math.sin(Math.PI*t),0));
+    return diag;
+}
+scene.add(createCurveMesh(f2,blueColor,0.025));
+
+
+//[-1,-1,-1] to [-1,1,1]
+let f3 = function(t){
+    let start = new Vector3(-1,-1,-1);
+    let end = new Vector3(-1,1,1);
+    let dir = end.clone().sub(start);
+    let diag = start.add(dir.multiplyScalar(t));
+    diag.add(new Vector3(-0.3*Math.sin(Math.PI*t),0,0));
+    return diag;
+}
+scene.add(createCurveMesh(f3,blueColor,0.025));
+
+
 
 
 

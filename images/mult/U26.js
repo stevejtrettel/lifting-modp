@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
+    Vector3, Group, SphereGeometry, FloatType, DoubleSide, CatmullRomCurve3,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -31,8 +31,12 @@ const scene = new Scene();
 
 
 
-//make the glass ball representing a point
-
+//color scheme
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
 
 
 function createGlassHex(col){
@@ -49,20 +53,54 @@ function createGlassHex(col){
 }
 
 
+function createOpaqueHex(col){
+    return new MeshPhysicalMaterial({
+        color : col,
+        roughness:0.1,
+        metalness:0,
+        clearcoat:1,
+    });
+}
+
+
+function createCircleArcMesh(ang0,ang1,color,rad=0.02){
+
+    let closed = false;
+    if(ang1-ang0>2*Math.PI-0.1){closed=true};
+
+    let pts = [];
+    for(let i=0; i<100; i++){
+        let t = ang0 + (ang1-ang0)*i/99;
+        pts.push(new Vector3(Math.cos(t),0,Math.sin(t)).multiplyScalar(1.5));
+    }
+
+    let path = new CatmullRomCurve3(pts,closed);
+    let arcGeom = new TubeGeometry(path,64,rad,8,closed);
+    return new Mesh(arcGeom, createGlassHex(color));
+}
+
+
+
 
 let ptGeom = new SphereGeometry(0.12);
-let ptMat = createGlassHex(0xd43b3b);
+let ptMat = createOpaqueHex(redColor);
+let edgeMat = createGlassHex(blueColor);
 
 
 
 for(let i=0; i<26; i++){
     let t = 2.*Math.PI *i/26;
-    let p = new Vector3(Math.cos(t),0,Math.sin(t));
+    let p = new Vector3(1.5*Math.cos(t),0,1.5*Math.sin(t));
     let mesh = new Mesh(ptGeom, ptMat);
     mesh.position.set(p.x,p.y,p.z);
     scene.add(mesh);
 }
 
+
+// //draw the full circle
+let unitCircle = createCircleArcMesh(0,2*Math.PI,blueColor,0.025);
+unitCircle.position.set(0,0,0);
+scene.add(unitCircle);
 
 
 
