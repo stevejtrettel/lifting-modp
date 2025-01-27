@@ -55,17 +55,51 @@ scene.add(f25xf25);
 
 
 //this has VERTICAL PLATES, assembled into cubes
-for(let i=-2; i<3; i++){
+// for(let i=-2; i<3; i++){
+//     for(let j = -2; j<3; j++) {
+//         for (let m = -2; m < 3; m++) {
+//             for (let n = -2; n < 3; n++) {
+//
+//                     let sph = sphMesh.clone();
+//                     let p = new Vector3(j,m,n);
+//                     p.add(new Vector3(7*i,0,0));
+//                     p.multiplyScalar(0.3);
+//                     sph.position.set(p.x,p.y,p.z);
+//                     f25xf25.add(sph);
+//             }
+//         }
+//     }
+// }
+
+//just three slices
+for(let i=-1; i<2; i++){
     for(let j = -2; j<3; j++) {
         for (let m = -2; m < 3; m++) {
             for (let n = -2; n < 3; n++) {
 
-                    let sph = sphMesh.clone();
-                    let p = new Vector3(j,m,1*n);//get rid of "6" for actual cubes
-                    p.add(new Vector3(7*i,0,0));
-                    p.multiplyScalar(0.3);
-                    sph.position.set(p.x,p.y,p.z);
-                    f25xf25.add(sph);
+                let sph = sphMesh.clone();
+                let p = new Vector3(j,m,n);
+                p.add(new Vector3(7*i,0,0));
+                p.multiplyScalar(0.3);
+                sph.position.set(p.x,p.y,p.z);
+                f25xf25.add(sph);
+            }
+        }
+    }
+}
+
+//the other ones:
+for(let i=-0.5; i<1; i++){
+    for(let j = -2; j<3; j++) {
+        for (let m = -2; m < 3; m++) {
+            for (let n = -2; n < 3; n++) {
+
+                let sph = sphMesh.clone();
+                let p = new Vector3(j,m,n);
+                p.add(new Vector3(7*i,6,0));
+                p.multiplyScalar(0.3);
+                sph.position.set(p.x,p.y,p.z);
+                f25xf25.add(sph);
             }
         }
     }

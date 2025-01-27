@@ -44,29 +44,40 @@ const scene = new Scene();
 
 //setup for our parallelogram
 let tau = new Vector2(1/2, Math.sqrt(3)/2);
-let fd = new FD(tau,1/4);
+let fd = new FD(tau,1/2);
 
+
+
+let display = new Group();
+scene.add(display);
 
 //add the parallelogram itself:
-let parallel = fd.getGlassParallelogram();
-scene.add(parallel);
+let parallel = fd.getParallelogram(0xffffff);
+display.add(parallel);
 
 
 //GRIDLINES: do a set of three levels of depth.
 //each runs the same procedure, for different choice of color and N
 
 let grid1 = fd.getGridlines(5,redColor,redColor,0.012);
-scene.add(grid1);
+display.add(grid1);
 
 let grid2 = fd.getGridlines(10,greenColor,greenColor,0.008);
-scene.add(grid2);
+display.add(grid2);
 
 let grid3 = fd.getGridlines(20,blueColor,blueColor,0.005);
-scene.add(grid3);
+display.add(grid3);
 
 let grid4 = fd.getGridlines(40,yellowColor,yellowColor,0.003);
-scene.add(grid4);
+display.add(grid4);
 
+
+
+// display.rotateX(Math.PI/2);
+ display.position.set(0,1,0);
+
+// let grid = fd.getGridlines(50,redColor,redColor,0.003);
+// scene.add(grid);
 
 
 // spot light
@@ -102,15 +113,15 @@ scene.add( targetObject );
 
 
 
-
-const ground = new Mesh(
-    new BoxGeometry( 100, 0.1, 100 ),
-    new MeshPhysicalMaterial({
-        color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
-    }),
-);
-ground.position.set(0.,-0.75,0);
-scene.add(ground);
+//
+// const ground = new Mesh(
+//     new BoxGeometry( 100, 0.1, 100 ),
+//     new MeshPhysicalMaterial({
+//         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
+//     }),
+// );
+// ground.position.set(0.,-0.75,0);
+// scene.add(ground);
 
 const backWall = new Mesh(
     new BoxGeometry( 100, 100, 0.1 ),

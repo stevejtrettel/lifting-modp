@@ -313,13 +313,13 @@ class HopfTorus{
             lines.add(vert);
         }
 
-        //get vertices to go with these
-        for(let i=0; i<N+1; i++){
-            for(let j=0; j<N+1; j++){
-                let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
-                lines.add(pt);
-            }
-        }
+        // //get vertices to go with these
+        // for(let i=0; i<N+1; i++){
+        //     for(let j=0; j<N+1; j++){
+        //         let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
+        //         lines.add(pt);
+        //     }
+        // }
 
         return lines;
 

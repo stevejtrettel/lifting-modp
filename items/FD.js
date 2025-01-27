@@ -56,10 +56,10 @@ class FD{
             transparent:true,
             clearcoat:1,
             opacity:1,
-            transmission:0.9,
+            transmission:0.5,
             ior:1.5,
-            thickness:1,
-            roughness:0.2,
+            thickness:0.1,
+            roughness:0.5,
         });
         return new Mesh(geometry, mat);
     }
@@ -160,13 +160,13 @@ class FD{
             lines.add(vert);
         }
 
-        //get vertices to go with these
-        for(let i=0; i<N+1; i++){
-            for(let j=0; j<N+1; j++){
-                let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
-                lines.add(pt);
-            }
-        }
+        // //get vertices to go with these
+        // for(let i=0; i<N+1; i++){
+        //     for(let j=0; j<N+1; j++){
+        //         let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
+        //         lines.add(pt);
+        //     }
+        // }
 
         return lines;
 
