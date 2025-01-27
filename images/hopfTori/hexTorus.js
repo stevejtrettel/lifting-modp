@@ -79,15 +79,15 @@ scene.add(torus3);
 //add gridlines to the torus
 
 //color pallete
-let col1 = 0xB3AF8F;
+let col1 = 0x8AAE92;
 let col2 = 0x66999B;
 let col3 = 0x496A81;
 let col4 = 0x2B3A67;
 
-let N = 20;
+let N = 10;
 
-let grid1 = torus.getGridlines(N,col1,col1,0.012);
-scene.add(grid1);
+// let grid1 = torus.getGridlines(N,col1,col1,0.012);
+// scene.add(grid1);
 
 let grid2 = torus.getGridlines(2*N,col2,col2,0.008);
 scene.add(grid2);
@@ -95,11 +95,15 @@ scene.add(grid2);
 let grid3 = torus.getGridlines(4*N,col3,col3,0.005);
 scene.add(grid3);
 
-let grid4 = torus.getGridlines(8*N,col4,col4,0.003);
-scene.add(grid4);
-
-// let grid4 = torus.getGridlines(200,redColor,redColor,0.003);
+// let grid4 = torus.getGridlines(8*N,col4,col4,0.003);
 // scene.add(grid4);
+
+
+
+
+
+// let grid = torus.getGridlines(200,redColor,redColor,0.003);
+// scene.add(grid);
 
 
 
