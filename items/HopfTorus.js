@@ -176,7 +176,7 @@ class HopfTorus{
     }
 
 
-    getSurfaceMesh(materialParams = defaultMatParams){
+    getSurface(materialParams = defaultMatParams){
 
         let mat = new MeshPhysicalMaterial(materialParams);
 
@@ -194,7 +194,7 @@ class HopfTorus{
 
     }
 
-    getFiberMesh(angles,color=0x8f2117, radius=0.01){
+    getHopfFiber(angles,color=0x8f2117, radius=0.01){
         //given theta and phi, compute the fiber of the hopf map thru this point of S2
         let theta = angles.theta;
         let phi = angles.phi;

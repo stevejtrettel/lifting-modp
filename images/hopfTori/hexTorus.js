@@ -59,7 +59,7 @@ let torus = new HopfTorus(getCurve(0.276,1.8,3,Math.PI/2),length,area);
 
 
 
-let torus3 = torus.getSurfaceMesh(
+let torusSurf = torus.getSurface(
     {
          color : 0xc9eaff,
         clearcoat:1,
@@ -74,7 +74,7 @@ let torus3 = torus.getSurfaceMesh(
         // roughness:0.6,
     }
 );
-scene.add(torus3);
+scene.add(torusSurf);
 
 //add gridlines to the torus
 
