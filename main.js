@@ -22,11 +22,10 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
+import{coordCurve,curveArea,curveLength} from "./data/-4/tau";
+import HopfTorus from "./items/HopfTorus2";
 
-import HopfTorus from "../items/HopfTorus";
-import {tau,curveArea, curveLength, coordCurve} from "../data/-11/tau";
-import pts from "../data/-11/3-5/pts6";
-
+import {f5} from "./images/lifts/-4/points.js";
 
 
 // init scene and objects, and lights
@@ -35,24 +34,49 @@ import pts from "../data/-11/3-5/pts6";
 const scene = new Scene();
 
 
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
+
+
 // the computer for dealing with the hopf torus
 let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 
+// let surf = torus.getSurface();
+// scene.add(surf);
 
-////{color:0x36409c,roughness:0.2,metalness:0,clearcoat:1}
-let surf = torus.getSurfaceMesh();
-scene.add(surf);
 
-let vertices = new Group();
-scene.add(vertices);
+//draw some curves!
+//
+// let fiberCurve = function(t){
+//     return new Vector2(2*Math.PI*t,0);
+// }
+// scene.add(torus.getLift(fiberCurve));
+//
 
-for(let i=0; i<pts.length; i++){
-    vertices.add(torus.getPointMesh(pts[i]));
+// let edgeCurve = function(t){
+//     return new Vector2(curveArea,curveLength).multiplyScalar(t/2);
+// }
+// scene.add(torus.getLift(edgeCurve,0.05,blueColor));
+//
+//
+// let vertCurve = function(t){
+//     return new Vector2(0,curveLength/2).multiplyScalar(t);
+// }
+// scene.add(torus.getLift(vertCurve,0.05,greenColor));
+
+
+// for(let i=0;i<20;i++) {
+//     scene.add(torus.getPoint(new Vector2(0,Math.PI*i / 19)));
+// }
+
+
+for(let i=0; i<f5.length;i++){
+    scene.add(torus.getPointFromData(f5[i]));
 }
-
-
-
-
 
 //
 // // area light for the scene:

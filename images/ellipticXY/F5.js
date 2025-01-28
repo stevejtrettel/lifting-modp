@@ -27,95 +27,72 @@ import Grid2D from "../../items/Grid2D";
 // init scene and objects, and lights
 //--------------------------------------------
 
+
+//color scheme
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
+
+
+
+
 const scene = new Scene();
+
+
 
 
 let grid = new Grid2D();
 
+//lines of a grid
 let gridlines = grid.getGridLines(2);
-gridlines.position.set(0,-0.3,0);
+//gridlines.position.set(0,-0.3,0);
 scene.add(gridlines);
 
-//make the glass ball representing a point
-
-let sphGeom = new SphereGeometry(0.2);
-let sphMat = new MeshPhysicalMaterial({
-    color : 0xc9eaff,
-        //0x8fd0ff,
-    transparent:true,
-    clearcoat:1,
-    opacity:1,
-    transmission:0.9,
-    ior:1.5,
-    thickness:1,
-    roughness:0.2,
-});
-let sphMesh = new Mesh(sphGeom, sphMat);
+//get vertices of grid.
+let vertices = grid.getGridVertices(2,0xc9eaff,0.075);//glassColor
+scene.add(vertices);
 
 
 //position points and add to scene
+let solutions = [[2, -2], [1, 2], [-2, 1], [-1, 1], [0, 0], [-1, -1], [-2, -1], [1, -2], [2,
+    2]];
 
 
+let ellipticPts = new Group();
+scene.add(ellipticPts);
 
-// add the actual points of the elliptic curve!
-let elliptic = new Group();
-scene.add(elliptic);
-
-let solGeom = new SphereGeometry(0.3);
-let solMat = new MeshPhysicalMaterial({
-    color : 0xe03d24,
-    transparent:true,
-    clearcoat:1,
-    opacity:1,
-    transmission:0.9,
-    ior:1.5,
-    thickness:1,
-    roughness:0.2,
-})
-let solPt = new Mesh(solGeom, solMat);
-let solutions = [
-    [0,0],[1,2],[1,-2],[2,2],[2,-2],[-2,1],[-2,-1],[-1,1],[-1,-1]
-];
-
-for(let i=0;i<solutions.length;i++){
-     let sol = solPt.clone();
-     sol.position.set(solutions[i][0],0,solutions[i][1]);
-     elliptic.add(sol);
+for(let i=0; i<solutions.length; i++){
+    let pt = grid.getVertex(solutions[i]);
+    ellipticPts.add(pt)
 }
 
-//finally add the point at infinity
-let inf = solPt.clone();
-inf.position.set(-4,0,0);
-elliptic.add(inf);
+
+//finally, add the point at infinity
+let infPos = [4,0];
+let inf = grid.getVertex(infPos);
+ellipticPts.add(inf);
 
 
 
+//add in edges drawing the group structure
 
-//add the background of points, so long as they are NOT solutions
+let group = new Group();
+scene.add(group);
 
-//check if the point is a solution
-let isSol = function(pt){
-    for(let i=0;i<solutions.length;i++){
-        if(pt[0]==solutions[i][0]&&pt[1]==solutions[i][1]){
-            return true;
-        }
-    }
-    return false;
+
+let orbit = [infPos,[2, -2], [1, 2], [-2, 1], [-1, 1], [0, 0], [-1, -1], [-2, -1], [1, -2], [2,
+    2],infPos];
+
+
+for(let i=0; i<orbit.length-1;i++){
+    let edge = grid.getRod(orbit[i],orbit[i+1],blueColor,0.025);
+    group.add(edge);
 }
 
-let f5xf5 = new Group();
-scene.add(f5xf5);
 
-for(let i=-2; i<3; i++){
-    for(let j = -2; j<3; j++){
-
-        if(!isSol([i,j])) {
-            let sph = sphMesh.clone();
-            sph.position.set(i, 0, j);
-            f5xf5.add(sph);
-        }
-    }
-}
 
 
 

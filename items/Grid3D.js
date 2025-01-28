@@ -67,8 +67,8 @@ class Grid3D{
 
     getRod(start, end, color=blueColor, radius=0.025){
         //start end are [i,j,k]
-        const p = toVec3(start);
-        const q = toVec3(end);
+        const p = toVec3(start).multiplyScalar(this.scale);
+        const q = toVec3(end).multiplyScalar(this.scale);
         const line = new LineCurve3(p,q);
         const geom = new TubeGeometry(line,64,radius,8,false);
         const mesh = new Mesh(geom, makeGlass(color));
@@ -77,8 +77,8 @@ class Grid3D{
 
     getBentRod(start,end,bendingDir, color=blueColor,radius=0.02){
         //start and end are [i,j,k]
-        const p = toVec3(start);
-        const q = toVec3(end);
+        const p = toVec3(start).multiplyScalar(this.scale);
+        const q = toVec3(end).multiplyScalar(this.scale);
         const dir = q.clone().sub(p);
         let amp =this.scale;
 
@@ -118,7 +118,7 @@ class Grid3D{
         return grid;
     }
 
-    getGridVertices(n,color,radius=0.03){
+    getGridVertices(n,color=0xc9eaff,radius=0.05){
         //nxn spread of vertices
         let sphGeom = new SphereGeometry(radius);
         let sphMesh = new Mesh(sphGeom, makeGlass(color));
@@ -140,7 +140,7 @@ class Grid3D{
             let pts = [];
             for(let i=0; i<64; i++){
                 let t = i/63;
-                pts.push(fn(t));
+                pts.push(fn(t).multiplyScalar(this.scale));
             }
             let path = new CatmullRomCurve3(pts);
             let curveGeom = new TubeGeometry(path,64,rad);
