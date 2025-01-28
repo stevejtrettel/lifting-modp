@@ -23,13 +23,21 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import HopfTorus from "../../../items/HopfTorus2";
-import {curveArea,curveLength, coordCurve, toHopfLattice} from "./data/tau";
-import data from "./data/4"
+import HopfTorus from "/items/HopfTorus2";
+import {curveArea,curveLength, coordCurve, toHopfLattice} from "/data/-4/tau";
+import data from "/data/-4/1"
 
 
 // init scene and objects, and lights
 //--------------------------------------------
+
+
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
 
 const scene = new Scene();
 
