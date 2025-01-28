@@ -154,7 +154,7 @@ class HopfTorus{
 
     }
 
-    getCurveMesh(curveFn, color=0x25178f, radius = 0.01,closed=false){
+    getCurve(curveFn, color=0x25178f, radius = 0.01,closed=false){
 
         //the curve mesh
         let curvePts = [];
@@ -170,13 +170,13 @@ class HopfTorus{
         //this is a curve we can call with respect to arclength!
         let curve  = new CatmullRomCurve3(curvePts);
         let radii = new CatmullRomCurve3(radiusValues);
-        let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,transparency:true,opacity:1,transmission:0.3,ior:1.5});
+        let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,clearcoat:1});
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
         return new Mesh(curveGeom, mat);
     }
 
 
-    getSurfaceMesh(materialParams = defaultMatParams){
+    getSurface(materialParams = defaultMatParams){
 
         let mat = new MeshPhysicalMaterial(materialParams);
 
@@ -194,7 +194,7 @@ class HopfTorus{
 
     }
 
-    getFiberMesh(angles,color=0x8f2117, radius=0.01){
+    getHopfFiber(angles,color=0x8f2117, radius=0.01){
         //given theta and phi, compute the fiber of the hopf map thru this point of S2
         let theta = angles.theta;
         let phi = angles.phi;
@@ -237,7 +237,7 @@ class HopfTorus{
             return isometricImage(pt);
         }
 
-        return this.getCurveMesh(curve,color,radius,true);
+        return this.getCurve(curve,color,radius,true);
     }
 
 
@@ -259,19 +259,33 @@ class HopfTorus{
             return isometricImage(pt);
         }
 
-        return this.getCurveMesh(curve,color,radius,true);
+        return this.getCurve(curve,color,radius,true);
 
     }
 
 
 
-    getPointOnLatticeMesh(fiberOffset,edgeOffset,color=0x8c1a0f,radius=0.01){
+    getPointLattice(fiberOffset,edgeOffset,color=0x8c1a0f,radius=0.01){
+
+        let tau = new Vector2(this.area/(2), this.length/(2));
+        let xOffsetVec = new Vector3(fiberOffset,0,0).multiplyScalar(2*Math.PI);
+        let yOffsetVec = new Vector3(tau.x,tau.y,0).multiplyScalar(edgeOffset);
+        let pos = xOffsetVec.add(yOffsetVec);
+
+        let pt = this.isometricImage(pos);
+        let r2 = pt.lengthSq();
+
+        let pointGeom = new SphereGeometry(radius*(1+r2));
+        let pointMat = new MeshPhysicalMaterial({color:color,roughness:0.1,metalness:0,clearcoat:1});
+        let mesh = new Mesh(pointGeom,pointMat)
+        mesh.position.set(pt.x,pt.y,pt.z);
+        return mesh;
 
     }
 
 
     //takes in a point p=(x,y) in the plane
-    getPointMesh(p, color=0x8c1a0f, radius =0.01){
+    getPointXY(p, color=0x8c1a0f, radius =0.01){
         //p is mathematica input [x,y] in the domain spanned by 1 and tau.
         let P = new Vector2(p[0],p[1]).multiplyScalar(2.*Math.PI);
 
@@ -284,6 +298,33 @@ class HopfTorus{
         mesh.position.set(pt.x,pt.y,pt.z);
         return mesh;
     }
+
+
+
+    getGridlines(N, edgeColor, vertexColor, radius){
+
+        let lines = new Group();
+
+        //get curves on the surface:
+        for(let i=0; i<N+1; i++){
+            let horiz = this.getFiberTranslate(i/N,edgeColor,radius);
+            let vert = this.getEdgeTranslate(i/N,edgeColor,radius);
+            lines.add(horiz);
+            lines.add(vert);
+        }
+
+        // //get vertices to go with these
+        // for(let i=0; i<N+1; i++){
+        //     for(let j=0; j<N+1; j++){
+        //         let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
+        //         lines.add(pt);
+        //     }
+        // }
+
+        return lines;
+
+    }
+
 
 
     getBaseSphere(color=0xa32017,radius=0.01){
@@ -317,7 +358,7 @@ class HopfTorus{
            return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
            // return P.multiplyScalar(0.5);
         }
-        let curve = this.getCurveMesh(sphereCurve, color, radius,true)
+        let curve = this.getCurve(sphereCurve, color, radius,true)
         base.add(curve);
 
         return base;

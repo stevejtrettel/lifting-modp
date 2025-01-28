@@ -57,7 +57,7 @@ torus1.position.set(2*dist,-0.25,0.25);
 scene.add(torus1);
 
 let fd1 = new FD(tau1);
-let parallel1 = fd1.getSurfaceMesh(0xe86c43);
+let parallel1 = fd1.getParallelogram(0xe86c43);
 parallel1.scale.set(0.085,0.085,0.085);
 parallel1.rotateX(Math.PI/2);
 parallel1.rotateZ(Math.PI/2);
@@ -84,7 +84,7 @@ torus2.position.set(dist,-0.25,0.25);
 scene.add(torus2);
 
 let fd2 = new FD(tau2);
-let parallel2 = fd2.getSurfaceMesh(0xffcc40);
+let parallel2 = fd2.getParallelogram(0xffcc40);
 parallel2.scale.set(0.1,0.1,0.1);
 parallel2.rotateX(Math.PI/2);
 parallel2.position.set(dist-0.25,-0.6,-dist);
@@ -105,7 +105,7 @@ torus3.position.set(0,-0.25,0.25);
 scene.add(torus3);
 
 let fd3 = new FD(tau3);
-let parallel3 = fd3.getSurfaceMesh(0x43bf4b);
+let parallel3 = fd3.getParallelogram(0x43bf4b);
 parallel3.scale.set(0.11,0.11,0.11);
 parallel3.rotateX(Math.PI/2);
 parallel3.rotateY(Math.PI);
@@ -130,7 +130,7 @@ scene.add(torus4);
 
 
 let fd4 = new FD(tau4);
-let parallel4 = fd4.getSurfaceMesh(0x4287f5);
+let parallel4 = fd4.getParallelogram(0x4287f5);
 parallel4.scale.set(0.085,0.085,0.085);
 parallel4.rotateX(Math.PI/2);
 parallel4.rotateY(Math.PI);
@@ -154,7 +154,7 @@ scene.add(torus5);
 
 
 let fd5 = new FD(tau5);
-let parallel5 = fd5.getSurfaceMesh(0xa83cf0);
+let parallel5 = fd5.getParallelogram(0xa83cf0);
 parallel5.scale.set(0.075,0.075,0.075);
 parallel5.rotateX(Math.PI/2);
 parallel5.rotateY(Math.PI);
