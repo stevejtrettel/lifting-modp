@@ -21,6 +21,25 @@ const blueColor = 0x4287f5;
 const yellowColor = 0xffd738;
 
 
+let makeMaterial = function(color=glassColor, glass=false){
+    let props = {
+        color:color,
+        clearcoat:1,
+        roughness:0.1,
+        metalness:0,
+    }
+    if(glass){
+        props.transparent=true;
+        props.opacity=1;
+        props.transmission=0.95;
+        props.ior=1.05;
+        props.thickness=0.1;
+    }
+    return new MeshPhysicalMaterial(props);
+}
+
+
+
 class HopfTorus{
 
     constructor(coordCurve, length, area) {
@@ -115,15 +134,26 @@ class HopfTorus{
         this.inverseArc = inverseArc;
 
         let toFundamentalDomain = function(pt){
+            //FIX THIS FUNCTION TO BE BETTER, LATER
+            //get us into the right strip: we dont' actually care if x direction is within fundamental domain or not
+            //all our points are positive (so just need to move down if y is above height of fd)
+            let gen = new Vector2(area/2,length/2);
+            while(pt.y>(length/2)){
+                pt = pt.sub(gen);
+            }
+
+
+
           //  figure out the vertical shift that needs to happen
-            let vert = Math.floor(pt.y/(length/2));
-            //subtract the appropriate number of the generator:
-            pt.sub(new Vector2(area/2,length/2).multiplyScalar(vert));
+          //   let vert = Math.floor(pt.y/(length/2));
+          //   //subtract the appropriate number of the generator:
+          //   pt.sub(new Vector2(area/2,length/2).multiplyScalar(vert));
+            //FIBER DIRECTION PARAMETERIZATION IS DEFINED EVERYWHERE: DON'T NEED TO GET IN THERE!
             //now do the same for the horizontal (fiber) direction:
             //at height y, we want x to be between a/l y and a/l y + 2PI
-            let offset = pt.x - area/length*pt.y;
-            let horiz = Math.floor(offset/(2.*Math.PI));
-            pt.sub(new Vector2(2*Math.PI,0).multiplyScalar(horiz));
+            // let offset = pt.x - area/length*pt.y;
+            // let horiz = Math.floor(offset/(2.*Math.PI));
+            // pt.sub(new Vector2(2*Math.PI,0).multiplyScalar(horiz));
             return pt;
         }
         this.toFundamentalDomain = toFundamentalDomain;
@@ -151,19 +181,6 @@ class HopfTorus{
 
 
     getSurface(color=glassColor, glass=false){
-
-            let mat = new MeshPhysicalMaterial({
-                color:color,
-                roughness:0.1,
-                metalness:0,
-                clearcoat:1,
-                transparent:true,
-                opacity:1,
-                ior:1.05,
-                transmission:0.9,
-                thickness:0.2,
-            });
-
         //now build the geometry of the hopf surface:
         //this is a function on [0,2pi]x[0,2pi]
         let coordCurve = this.coordCurve;
@@ -179,7 +196,8 @@ class HopfTorus{
             dest.set(p.x,p.y,p.z);
         }
         let surfGeom = new ParametricGeometry(parameterization, this.res, this.res);
-        return new Mesh(surfGeom, mat);
+        let surfMat = makeMaterial(color,glass);
+        return new Mesh(surfGeom, surfMat);
     }
 
 
@@ -201,8 +219,8 @@ class HopfTorus{
         }
         let curve  = new CatmullRomCurve3(curvePts);
         let radii = new CatmullRomCurve3(radiusValues);
-        let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,clearcoat:1});
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
+        let mat = makeMaterial(color,glass);
         return new Mesh(curveGeom, mat);
     }
 
@@ -241,20 +259,10 @@ class HopfTorus{
         let q = this.isometricImage(pt);
         let rescale = 1+q.lengthSq();
         let geom = new SphereGeometry(radius*rescale);
-        let mat = new MeshPhysicalMaterial({
-            color:color, roughness:0.1, metalness:0, clearcoat:1,
-        });
+        let mat = makeMaterial(color,glass);
         let mesh = new Mesh(geom, mat);
         mesh.position.set(q.x,q.y,q.z);
         return mesh;
-    }
-
-    getPointFromData(data,radius,color,glass=false){
-        //get a point from our data set
-        //these come in the form [x,y], using fundamental domain (1,tau)
-        //need to scale up and turn into vector!
-        let pt = new Vector2(data[0],data[1]).multiplyScalar(2*Math.PI);
-        return this.getPoint(pt,radius, color,glass);
     }
 
 }

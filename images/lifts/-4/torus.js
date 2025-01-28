@@ -23,9 +23,9 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import HopfTorus from "../../../items/HopfTorus";
-import{tau,curveLength,curveArea,coordCurve} from "./tau";
-import{f5,f25} from "./points";
+import HopfTorus from "../../../items/HopfTorus2";
+import {curveArea,curveLength, coordCurve, toHopfLattice} from "./data/tau";
+import data from "./data/4"
 
 
 // init scene and objects, and lights
@@ -38,23 +38,27 @@ const scene = new Scene();
 let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 
 
-////{color:0x36409c,roughness:0.2,metalness:0,clearcoat:1}
-// let surf = torus.getSurface();
-// scene.add(surf);
-//
-let f5vertices = new Group();
-scene.add(f5vertices);
 
-for(let i=0; i<f5.length; i++){
-    f5vertices.add(torus.getPointXY(f5[i],0x8c1a0f,0.05));
+//drawing the torus surface in R3
+let surf = torus.getSurface();
+//scene.add(surf);
+
+
+
+//drawing points over finite field:
+let points = new Group();
+scene.add(points);
+
+
+for(let i=0; i<data.length;i++){
+    let pt = toHopfLattice(data[i]);
+    points.add(torus.getPoint(pt));
 }
 
 
-// let fn = function(t){
-//     return new Vector2(0.3, 0.1).multiplyScalar(8.*t );
-// }
-// let curve = torus.getIsometricCurve(fn);
-// scene.add(curve);
+
+
+
 
 
 //
