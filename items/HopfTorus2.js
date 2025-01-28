@@ -42,19 +42,15 @@ let makeMaterial = function(color=glassColor, glass=false){
 
 class HopfTorus{
 
-    constructor(coordCurve, length, area) {
+    constructor(coordCurve, latticeData) {
         //curve is a closed curve on 0 to 2*pi
         this.coordCurve = coordCurve;
 
         //store length and area
-        this.length = length;
-        this.area = area;
-
-        //the generators of the lattice in fiber, edge direction
-        let fiberGenerator =  new Vector2(2*Math.PI,0);
-        this.fiberGenerator = fiberGenerator;
-        let edgeGenerator = new Vector2(area/2,length/2);
-        this.edgeGenerator = edgeGenerator;
+        this.length =latticeData.length;
+        this.area =latticeData.area;
+        this.tau = latticeData.tau;
+        this.fromTauCoords = latticeData.fromTauCoords;
 
         this.res = 256;
 
@@ -137,12 +133,10 @@ class HopfTorus{
             //FIX THIS FUNCTION TO BE BETTER, LATER
             //get us into the right strip: we dont' actually care if x direction is within fundamental domain or not
             //all our points are positive (so just need to move down if y is above height of fd)
-            let gen = new Vector2(area/2,length/2);
-            while(pt.y>(length/2)){
+            let gen = new Vector2(latticeData.area/2,latticeData.length/2);
+            while(pt.y>(latticeData.length/2)){
                 pt = pt.sub(gen);
             }
-
-
 
           //  figure out the vertical shift that needs to happen
           //   let vert = Math.floor(pt.y/(length/2));
@@ -226,7 +220,7 @@ class HopfTorus{
 
 
     getFiberAt(x,radius, color, glass=false){
-        let edgeGen = this.edgeGenerator.clone();
+        let edgeGen = new Vector2(this.area/2,this.length/2);
         let fiberCurve = function(s){
             let origin = edgeGen.multiplyScalar(x);
             return origin.add(2*Math.PI*s,0);
@@ -235,7 +229,7 @@ class HopfTorus{
     }
 
     getEdgeAt(x,radius, color, glass=false){
-        let edgeGen = this.edgeGenerator.clone();
+        let edgeGen = new Vector2(this.area/2,this.length/2);
         let edgeCurve = function(t){
             let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
             return origin.add(edgeGen.multiplyScalar(t));
@@ -264,6 +258,12 @@ class HopfTorus{
         mesh.position.set(q.x,q.y,q.z);
         return mesh;
     }
+
+    // getPointFromData(dataPt,radius=0.05, color=redColor, glass=false){
+    //     //dataPt is [x,y] given in the lattice gen by 1, tau.
+    //     let pt = this.fromTauCoords(dataPt);
+    //     return this.getPoint(pt,radius,color,glass);
+    // }
 
 }
 

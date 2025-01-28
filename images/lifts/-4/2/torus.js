@@ -24,7 +24,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
 import HopfTorus from "/items/HopfTorus2";
-import {curveArea,curveLength, coordCurve, toHopfLattice} from "/data/-4/tau";
+import {coordCurve,latticeData} from "/data/-4/tau";
 import data from "/data/-4/2"
 
 
@@ -44,8 +44,7 @@ const scene = new Scene();
 
 
 // the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,curveArea,curveLength);
-
+let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
@@ -60,7 +59,7 @@ scene.add(points);
 
 
 for(let i=0; i<data.length;i++){
-    let pt = toHopfLattice(data[i]);
+    let pt = torus.fromTauCoords(data[i]);
     points.add(torus.getPoint(pt));
 }
 
@@ -71,7 +70,7 @@ for(let i=0; i<data.length;i++){
 //for the subgroup
 let subCurve = function(t){
     //get new initial direction: in unit square is 0.3, 0.1
-    let dir = toHopfLattice([0.3,0.1]);
+    let dir = torus.fromTauCoords([0.3,0.1]);
     return dir.multiplyScalar(10*t);
 }
 scene.add(torus.getLift(subCurve,0.02,blueColor,false));
@@ -80,9 +79,9 @@ scene.add(torus.getLift(subCurve,0.02,blueColor,false));
 //for the coset
 let cosCurve = function(t){
     //get new initial direction: in unit square is 0.3, 0.1
-    let dir = toHopfLattice([0.3,0.1]);
+    let dir = torus.fromTauCoords([0.3,0.1]);
     dir.multiplyScalar(10*t);
-    let offset = toHopfLattice([0.,0.5]);
+    let offset = torus.fromTauCoords([0.,0.5]);
     return dir.add(offset);
 }
 scene.add(torus.getLift(cosCurve,0.02,yellowColor,false));
@@ -94,9 +93,9 @@ scene.add(tracks);
 
 for(let i=0; i<10; i++){
 
-    let start = toHopfLattice([0.3,0.1]);
+    let start = torus.fromTauCoords([0.3,0.1]);
     start.multiplyScalar(i);
-    let offset = toHopfLattice([0.5,0.]);
+    let offset = torus.fromTauCoords([0.5,0.]);
     let curve = function(t){
         return start.clone().add(offset.clone().multiplyScalar(t));
     }

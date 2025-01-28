@@ -24,7 +24,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
 import HopfTorus from "/items/HopfTorus2";
-import {curveArea,curveLength, coordCurve, toHopfLattice} from "/data/-4/tau";
+import {coordCurve, latticeData} from "/data/-4/tau";
 import data from "/data/-4/3"
 
 
@@ -44,7 +44,7 @@ const scene = new Scene();
 
 
 // the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,curveArea,curveLength);
+let torus = new HopfTorus(coordCurve,latticeData);
 
 
 
@@ -60,7 +60,7 @@ scene.add(points);
 
 
 for(let i=0; i<data.length;i++){
-    let pt = toHopfLattice(data[i]);
+    let pt = torus.fromTauCoords(data[i]);
     points.add(torus.getPoint(pt));
 }
 
