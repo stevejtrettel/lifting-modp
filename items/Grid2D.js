@@ -119,7 +119,7 @@ class Grid2D{
         let sphMesh = new Mesh(sphGeom, makeGlass(color));
         let vertices = new Group();
         for(let i=-n;i<n+1;i++){
-            for(let j=-n;j<n;j++){
+            for(let j=-n;j<n+1;j++){
                 let mesh = sphMesh.clone();
                 let p = toVec3([i,j]).multiplyScalar(this.scale);
                 mesh.position.set(p.x,p.y,p.z);

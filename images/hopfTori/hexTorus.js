@@ -99,11 +99,15 @@ scene.add(grid3);
 // scene.add(grid4);
 
 
+// let fiber = torus.getTransitionEdge(0,redColor,0.003);
+// scene.add(fiber);
 
 
 
-// let grid = torus.getGridlines(200,redColor,redColor,0.003);
-// scene.add(grid);
+
+//TRANSITION MAP ON PARALLELOGRAM
+ // let grid = torus.getTransitionGridlines(10,redColor,0.01);
+ // scene.add(grid);
 
 
 

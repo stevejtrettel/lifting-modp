@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -23,6 +23,10 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
+import HopfTorus from "../../../items/HopfTorus";
+import{tau,curveLength,curveArea,coordCurve} from "./tau";
+import{f5,f25} from "./points";
+
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -30,113 +34,46 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 const scene = new Scene();
 
 
-//make the glass ball representing a point
-
-let sphGeom = new SphereGeometry(0.12);
-let sphMat = new MeshPhysicalMaterial({
-    color : 0xc9eaff,
-    //0x8fd0ff,
-    transparent:true,
-    clearcoat:1,
-    opacity:1,
-    transmission:0.95,
-    ior:1.5,
-    thickness:1,
-    roughness:0.2,
-});
-let sphMesh = new Mesh(sphGeom, sphMat);
+// the computer for dealing with the hopf torus
+let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 
 
-
-//the points that are on the elliptic curve
-let sol = [[[0, 0], [0, 0]], [[0, 1], [0, 0]], [[0, 4], [0, 0]], [[1, 0], [2,
-    0]], [[1, 0], [3, 0]], [[1, 2], [1, 4]], [[1, 2], [4, 1]], [[1,
-    3], [1, 1]], [[1, 3], [4, 4]], [[2, 0], [2, 0]], [[2, 0], [3,
-    0]], [[3, 0], [1, 0]], [[3, 0], [4, 0]], [[4, 0], [1, 0]], [[4,
-    0], [4, 0]], [[4, 2], [2, 2]], [[4, 2], [3, 3]], [[4, 3], [2,
-    3]], [[4, 3], [3, 2]]];
-
-
-
-
-
-let f25xf25 = new Group();
-scene.add(f25xf25);
-
-//going to build this as a stack of 5 cubes
-
-
-//this has VERTICAL PLATES, assembled into cubes
-// for(let i=-2; i<3; i++){
-//     for(let j = -2; j<3; j++) {
-//         for (let m = -2; m < 3; m++) {
-//             for (let n = -2; n < 3; n++) {
+////{color:0x36409c,roughness:0.2,metalness:0,clearcoat:1}
+// let surf = torus.getSurface();
+// scene.add(surf);
 //
-//                     let sph = sphMesh.clone();
-//                     let p = new Vector3(j,m,n);
-//                     p.add(new Vector3(7*i,0,0));
-//                     p.multiplyScalar(0.3);
-//                     sph.position.set(p.x,p.y,p.z);
-//                     f25xf25.add(sph);
-//             }
-//         }
-//     }
-// }
+let f5vertices = new Group();
+scene.add(f5vertices);
 
-//just three slices
-for(let i=-1; i<2; i++){
-    for(let j = -2; j<3; j++) {
-        for (let m = -2; m < 3; m++) {
-            for (let n = -2; n < 3; n++) {
-
-                let sph = sphMesh.clone();
-                let p = new Vector3(j,m,n);
-                p.add(new Vector3(7*i,0,0));
-                p.multiplyScalar(0.3);
-                sph.position.set(p.x,p.y,p.z);
-                f25xf25.add(sph);
-            }
-        }
-    }
-}
-
-//the other ones:
-for(let i=-0.5; i<1; i++){
-    for(let j = -2; j<3; j++) {
-        for (let m = -2; m < 3; m++) {
-            for (let n = -2; n < 3; n++) {
-
-                let sph = sphMesh.clone();
-                let p = new Vector3(j,m,n);
-                p.add(new Vector3(7*i,6,0));
-                p.multiplyScalar(0.3);
-                sph.position.set(p.x,p.y,p.z);
-                f25xf25.add(sph);
-            }
-        }
-    }
+for(let i=0; i<f5.length; i++){
+    f5vertices.add(torus.getPointXY(f5[i],0x8c1a0f,0.05));
 }
 
 
-
-//this has HORIZONTAL SQUARES, assembled into cubes
-// for(let i=-2; i<3; i++){
-//     for(let j = -2; j<3; j++) {
-//         for (let m = -2; m < 3; m++) {
-//             for (let n = -2; n < 3; n++) {
-//
-//                 let sph = sphMesh.clone();
-//                 let p = new Vector3(6*m,0,6*n);//get rid of "6" for actual cubes
-//                 p.add(new Vector3(i,0,j));
-//                 p.multiplyScalar(0.3);
-//                 sph.position.set(p.x,p.y,p.z);
-//                 f25xf25.add(sph);
-//             }
-//         }
-//     }
+// let fn = function(t){
+//     return new Vector2(0.3, 0.1).multiplyScalar(8.*t );
 // }
+// let curve = torus.getIsometricCurve(fn);
+// scene.add(curve);
 
 
+//
+// // area light for the scene:
+// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
+// areaLight.position.x = 1.5;
+// areaLight.position.y = 1.0;
+// areaLight.position.z = - 0.5;
+// areaLight.rotateZ( - Math.PI / 4 );
+// areaLight.rotateX( - Math.PI / 2 );
+// areaLight.isCircular = false;
+// scene.add( areaLight );
+//
+// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
+// redLight.position.y = 1.25;
+// redLight.position.z = - 3.5;
+// redLight.rotateX( Math.PI );
+// redLight.isCircular = false;
+// scene.add( redLight );
 
 
 
@@ -147,7 +84,7 @@ spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 2.0;
+spotLight.intensity = 5.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -180,16 +117,16 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(0.,-1.5,0);
+ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,4,20);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
@@ -237,7 +174,7 @@ pathTracer.setScene( scene, camera );
 
 pathTracer.renderScale = Math.max( 1 / window.devicePixelRatio, 0.5 );;
 pathTracer.tiles.setScalar( 3 );
-pathTracer.bounces = 50.;
+pathTracer.bounces = 30.;
 
 
 

@@ -18,20 +18,23 @@ import ParametricGeometry from "./ParametricGeometry";
 
 
 let defaultMatParams = {
-    color : 0xffffff,
+    color :0xc9eaff,
+    //0xffffff,
         //0x4d80d1,
         //0xc9eaff,//lightblue
         //0xbee6c5,
         //0xffffff,
     side: DoubleSide,
     transparent:true,
-    clearcoat:1,
     opacity:1,
     transmission:0.99,
-    ior:1.5,
+    ior:1.2,
     thickness:0.2,
-    roughness:0.5,
+    roughness:0.1,
+    clearcoat:1,
+    metalness:0,
 };
+
 
 
 
@@ -104,10 +107,36 @@ class HopfTorus{
         }
         this.fudgeFactor = fudgeFactor;
 
+
+        let arcLength = function(t){
+            //find the arclength of c(t) at parameter t;
+            let x = 0;
+            let dx = 2*Math.PI/1000;
+            let N = Math.floor(t/dx);
+
+            let tot = 0;
+            for(let i=0; i<N; i++) {
+                let a0 = coordCurve(x);
+                let a1 = coordCurve(x + dx);
+
+                let sin = Math.sin(a0.phi);
+                let dtheta = a1.theta - a0.theta;
+                let dphi = a1.phi - a0.phi;
+                let ds2 = sin * sin * dtheta * dtheta + dphi * dphi;
+                let ds = Math.sqrt(ds2);
+
+                tot += ds;
+                x += dx;
+            }
+
+            return tot;
+        }
+        this.arcLength = arcLength;
+
         let inverseArc = function(L){
             //find the t such that the curve on the 2 sphere has length L from o to t.
             let t=0;
-            let tot =0;
+            let tot = 0;
             let N = 3000;
             let dt = 2.*Math.PI/N;
 
@@ -152,7 +181,26 @@ class HopfTorus{
         this.isometricImage = isometricImage;
 
 
+        let nonIsoTransitionMap = function(p){
+            //map from the plane to the plane
+            // (u,v) up to torus isometrically
+            //then down to s,t via simple parameterization
+            let u = p.x;
+            let v = p.y;
+            let f = fudgeFactor(v);
+            let L = arcLength(v);
+
+            let s = u  + f;
+            let t = L/2;
+
+            return new Vector2(s,t);
+        }
+        this.nonIsoTransitionMap = nonIsoTransitionMap;
+
+
+
     }
+
 
     getCurve(curveFn, color=0x25178f, radius = 0.01,closed=false){
 
@@ -172,6 +220,28 @@ class HopfTorus{
         let radii = new CatmullRomCurve3(radiusValues);
         let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,clearcoat:1});
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
+        return new Mesh(curveGeom, mat);
+    }
+
+
+
+
+
+    getPlaneCurve(curveFn, color=0x25178f, radius = 0.01,closed=false){
+
+        //the curve mesh
+        let curvePts = [];
+        let radiusValues = [];
+        for(let i=0;i<this.res+1;i++){
+            let t = 2.*Math.PI * i/this.res;
+            let pt = curveFn(t);
+            curvePts.push(pt);
+        }
+
+        //this is a curve we can call with respect to arclength!
+        let curve  = new CatmullRomCurve3(curvePts);
+        let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,clearcoat:1});
+        let curveGeom = new TubeGeometry(curve, 2.*this.res,  radius,16, closed);
         return new Mesh(curveGeom, mat);
     }
 
@@ -238,6 +308,20 @@ class HopfTorus{
         }
 
         return this.getCurve(curve,color,radius,true);
+    }
+
+    getIsometricCurve(planecurve,color,radius,closed){
+
+        let isometricImage = this.isometricImage;
+        let area = this.area;
+        let length=this.length;
+
+        let curve = function(t) {
+            let pt = planecurve(t);
+            return isometricImage(pt);
+        }
+
+        return this.getCurve(curve,color,radius,closed);
     }
 
 
@@ -364,6 +448,60 @@ class HopfTorus{
         return base;
 
     }
+
+
+    getTransitionEdge(x,color,radius){
+
+        //x is a percent distance along the curve on the sphere
+        let transition = this.nonIsoTransitionMap;
+        let area = this.area;
+        let length = this.length;
+        let curve = function(v){
+            //curve length is 2Pi:
+            let off = 2*Math.PI * x;
+            let q = new Vector2(area/2,length/2).divideScalar(2*Math.PI);
+            q.multiplyScalar(v);
+            q.add(new Vector2(off,0));
+            let p = transition(q);
+            return new Vector3(p.x,0,p.y);
+        }
+        return this.getPlaneCurve(curve,color,radius,false);
+    }
+
+
+    getTransitionFiber(x,color,radius){
+
+        //x is a percent distance along the curve on the sphere
+        let transition = this.nonIsoTransitionMap;
+        let fudge = this.fudgeFactor;
+        let curve = function(u){
+            //fiber length is 2Pi:
+            //getCurve already has 2PI built in, so just let s go from 0 to 1
+            let v = 2*Math.PI * x;
+            let q = new Vector2(u,v);
+            let p = transition(q);
+            return new Vector3(p.x,0,p.y);
+        }
+        return this.getPlaneCurve(curve,color,radius,false);
+    }
+
+
+
+    getTransitionGridlines(N, color, radius){
+
+        let lines = new Group();
+
+        //get curves on the surface:
+        for(let i=0; i<N+1; i++){
+            let horiz = this.getTransitionFiber(i/N,color,radius);
+            let vert = this.getTransitionEdge(i/N,color,radius);
+            lines.add(horiz);
+            lines.add(vert);
+        }
+
+        return lines;
+    }
+
 
 
 }

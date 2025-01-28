@@ -52,29 +52,32 @@ let display = new Group();
 scene.add(display);
 
 //add the parallelogram itself:
-let parallel = fd.getParallelogram(0xffffff);
+let parallel = fd.getParallelogram(glassColor);
 display.add(parallel);
 
 
-//GRIDLINES: do a set of three levels of depth.
-//each runs the same procedure, for different choice of color and N
+//GRIDLINES:
 
-let grid1 = fd.getGridlines(5,redColor,redColor,0.012);
-display.add(grid1);
+//color pallete
+let col1 = 0x8AAE92;
+let col2 = 0x66999B;
+let col3 = 0x496A81;
+let col4 = 0x2B3A67;
 
-let grid2 = fd.getGridlines(10,greenColor,greenColor,0.008);
+let N = 3;
+
+// let grid1 = torus.getGridlines(N,col1,col1,0.012);
+// scene.add(grid1);
+
+let grid2 = fd.getGridlines(2*N,col2,col2,0.025);
 display.add(grid2);
 
-let grid3 = fd.getGridlines(20,blueColor,blueColor,0.005);
+let grid3 = fd.getGridlines(4*N,col3,col3,0.016);
 display.add(grid3);
 
-let grid4 = fd.getGridlines(40,yellowColor,yellowColor,0.003);
-display.add(grid4);
 
-
-
-// display.rotateX(Math.PI/2);
- display.position.set(0,1,0);
+ display.rotateX(Math.PI/2);
+//  display.position.set(0,1,0);
 
 // let grid = fd.getGridlines(50,redColor,redColor,0.003);
 // scene.add(grid);
@@ -113,22 +116,22 @@ scene.add( targetObject );
 
 
 
-//
-// const ground = new Mesh(
-//     new BoxGeometry( 100, 0.1, 100 ),
-//     new MeshPhysicalMaterial({
-//         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
-//     }),
-// );
-// ground.position.set(0.,-0.75,0);
-// scene.add(ground);
+
+const ground = new Mesh(
+    new BoxGeometry( 100, 0.1, 100 ),
+    new MeshPhysicalMaterial({
+        color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
+    }),
+);
+ground.position.set(0.,-1.2,0);
+scene.add(ground);
 
 const backWall = new Mesh(
     new BoxGeometry( 100, 100, 0.1 ),
     new MeshPhysicalMaterial({
     }),
 );
-backWall.position.set(0,0,5);
+backWall.position.set(0,0,50);
 scene.add(backWall);
 
 
