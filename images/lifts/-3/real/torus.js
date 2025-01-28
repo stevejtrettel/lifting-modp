@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -21,126 +21,68 @@ import {
 } from 'three-gpu-pathtracer';
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
-import HopfTorus from "../../items/HopfTorusOLD";
-import FD from "../../items/FD";
+
+
+import HopfTorus from "/items/HopfTorus";
+import {coordCurve,latticeData} from "/data/-3/tau";
 
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
+
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
+
 const scene = new Scene();
 
-let getCurve = function(a,b,n,p){
-    return function(t){
-        return {
-            phi: p+a*b*Math.cos(n*t),
-            theta: t + a*Math.sin(2*n*t)
-        };
-    }
+
+// the computer for dealing with the hopf torus
+let torus = new HopfTorus(coordCurve,latticeData);
+
+
+//drawing the torus surface in R3
+let surf = torus.getSurface();
+scene.add(surf);
+
+
+//draw the two circles that are the real points:
+//this is not a rectangle, so only one real component
+let real1 = function(t){
+    //generator in fiber direction
+    let dir = torus.fromTauCoords([1,0]);
+    dir.multiplyScalar(t);
+    return dir.add(torus.fromTauCoords([0,0.44]));
 }
-
-
-let dist = 1.25;
-
-let tau1 = new Vector2(0,Math.sqrt(2));
-let area1 = 4*Math.PI/3;
-let length1 =  4*Math.PI/3*Math.sqrt(2);
-let hopf1 = new HopfTorus(getCurve(0,0,0,Math.PI/2+0.7),length1,area1);
-
-let base1 = hopf1.getBaseSphere(0xe86c43);
-base1.position.set(2*dist,0,0);
-scene.add(base1);
-
-let torus1 = hopf1.getSurface({color: 0xe86c43, metalness:0, roughness:0.3,clearcoat:true});
-torus1.scale.set(0.28,0.28,0.28);
-torus1.rotateX(Math.PI/2);
-torus1.position.set(2*dist,dist,0);
-scene.add(torus1);
+scene.add(torus.getLift(real1,0.02,blueColor,false));
 
 
 
 
 
 
-
-
-let tau2 = new Vector2(0,1);
-let area2 = 2*Math.PI;
-let length2 = 2*Math.PI;
-let hopf2 = new HopfTorus(getCurve(0,0,0,Math.PI/2),length2,area2);
-
-let base2 = hopf2.getBaseSphere(0xffcc40);
-base2.position.set(dist,0,0);
-scene.add(base2);
-
-let torus2 = hopf2.getSurface({color: 0xffcc40, metalness:0, roughness:0.3,clearcoat:true});
-torus2.scale.set(0.2,0.2,0.2);
-torus2.rotateX(Math.PI/2);
-torus2.position.set(dist,dist,0);
-scene.add(torus2);
-
-
-
-
-let tau3 = new Vector2(1/2, Math.sqrt(3)/2);
-let area3 = 4*Math.PI*tau3.x;
-let length3 = 4*Math.PI*tau3.y;
-let hopf3 = new HopfTorus(getCurve(0.276,1.8,3,Math.PI/2),length3,area3);
-
-let base3 = hopf3.getBaseSphere(0x43bf4b);
-base3.position.set(0,0,0);
-scene.add(base3);
-
-
-let torus3 = hopf3.getSurface({color: 0x43bf4b, metalness:0, roughness:0.3,clearcoat:true});
-torus3.scale.set(0.15,0.15,0.15);
-torus3.rotateX(Math.PI/2);
-torus3.position.set(0,dist,0);
-scene.add(torus3);
-
-
-
-
-
-
-let tau4 = new Vector2(1/2, Math.sqrt(7)/2);
-let area4 = 4*Math.PI*tau4.x;
-let length4 = 4*Math.PI*tau4.y;
-let hopf4 = new HopfTorus(getCurve(0.1179,3.89,7,Math.PI/2),length4,area4);
-
-let base4 = hopf4.getBaseSphere(0x4287f5);
-base4.position.set(-dist,0,0);
-scene.add(base4);
-
-let torus4 = hopf4.getSurface({color: 0x4287f5, metalness:0, roughness:0.3,clearcoat:true});
-torus4.scale.set(0.15,0.15,0.15);
-torus4.rotateX(Math.PI/2);
-torus4.position.set(-dist,dist,0);
-scene.add(torus4);
-
-
-
-
-
-
-let tau5 = new Vector2(1/2, Math.sqrt(11)/2);
-let area5 = 4*Math.PI*tau5.x;
-let length5 = 4*Math.PI*tau5.y;
-let hopf5 = new HopfTorus(getCurve(0.07,5.705,11,Math.PI/2),length5,area5);
-
-let base5 = hopf5.getBaseSphere(0xa83cf0);
-base5.position.set(-2*dist,0,0);
-scene.add(base5);
-
-
-let torus5 = hopf5.getSurface({color: 0xa83cf0, metalness:0, roughness:0.3,clearcoat:true});
-torus5.scale.set(0.155,0.155,0.155);
-torus5.rotateX(Math.PI/2);
-torus5.position.set(-2*dist,dist,0);
-scene.add(torus5);
-
-
+//
+// // area light for the scene:
+// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
+// areaLight.position.x = 1.5;
+// areaLight.position.y = 1.0;
+// areaLight.position.z = - 0.5;
+// areaLight.rotateZ( - Math.PI / 4 );
+// areaLight.rotateX( - Math.PI / 2 );
+// areaLight.isCircular = false;
+// scene.add( areaLight );
+//
+// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
+// redLight.position.y = 1.25;
+// redLight.position.z = - 3.5;
+// redLight.rotateX( Math.PI );
+// redLight.isCircular = false;
+// scene.add( redLight );
 
 
 
@@ -151,7 +93,7 @@ spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 2.0;
+spotLight.intensity = 5.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -184,16 +126,16 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(0.,-0.75,0);
+ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,0,5);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene

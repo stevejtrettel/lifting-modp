@@ -1,91 +1,58 @@
 import {
-    CatmullRomCurve3,
-    Mesh,
-    MeshPhysicalMaterial,
-    TubeGeometry,
     Vector2,
     Vector3,
-    Vector4,
-    SphereGeometry,
-    DoubleSide,
-    Group,
+    MeshPhysicalMaterial, Mesh, CatmullRomCurve3, SphereGeometry, Group,
 } from "three";
 
-import {VarTubeGeometry} from "./VarTubeGeometry";
+
+import{
+    sphCoords,
+    toroidalCoords,
+    stereoProj,
+} from "./utils";
 import ParametricGeometry from "./ParametricGeometry";
+import {VarTubeGeometry} from "./VarTubeGeometry";
 
 
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
 
 
-let defaultMatParams = {
-    color :0xc9eaff,
-    //0xffffff,
-        //0x4d80d1,
-        //0xc9eaff,//lightblue
-        //0xbee6c5,
-        //0xffffff,
-    side: DoubleSide,
-    transparent:true,
-    opacity:1,
-    transmission:0.99,
-    ior:1.2,
-    thickness:0.2,
-    roughness:0.1,
-    clearcoat:1,
-    metalness:0,
-};
-
-
-
-
-let toroidalCoords = function(a,b,c){
-    let x = Math.cos(a)*Math.sin(c);
-    let y = Math.sin(a)*Math.sin(c);
-    let z = Math.cos(b)*Math.cos(c);
-    let w = Math.sin(b)*Math.cos(c);
-
-    //rotate (x,z,-y)
-    return new Vector4(x,z,-y,w);
+let makeMaterial = function(color=glassColor, glass=false){
+    let props = {
+        color:color,
+        clearcoat:1,
+        roughness:0.1,
+        metalness:0,
+    }
+    if(glass){
+        props.transparent=true;
+        props.opacity=1;
+        props.transmission=0.95;
+        props.ior=1.05;
+        props.thickness=0.1;
+    }
+    return new MeshPhysicalMaterial(props);
 }
 
 
-let stereoProj = function(pt){
-    return new Vector3(pt.x,pt.y,pt.z).divideScalar(1.-pt.w);
-}
 
-let sphCoords = function(angles){
-    let phi = angles.phi;
-    let theta = angles.theta;
-
-    let x = Math.cos(theta)*Math.sin(phi);
-    let y = Math.sin(theta)*Math.sin(phi);
-    let z = Math.cos(phi);
-
-    return new Vector3(x,y,z);
-
-}
-
-
-//coord curve is a function of the form t->{theta: f(t), phi:g(t)}
 class HopfTorus{
-    constructor(coordCurve,length=6.28, area=6.28) {
 
-        this.length = length;
-        this.area = area;
-
+    constructor(coordCurve, latticeData) {
+        //curve is a closed curve on 0 to 2*pi
         this.coordCurve = coordCurve;
+
+        //store length and area
+        this.length =latticeData.length;
+        this.area =latticeData.area;
+        this.tau = latticeData.tau;
+        this.fromTauCoords = latticeData.fromTauCoords;
+
         this.res = 256;
-
-
-        //now build the geometry of the hopf surface:
-        // map from R2 to R4, in the 3 sphere
-        this.surface = function(s,t){
-            let angles = coordCurve(t);
-            let phi = angles.phi;
-            let theta = angles.theta;
-            return  toroidalCoords(theta+s,s,phi/2);
-        }
-
 
         //auxiliary functions for building the actual isometry
         let fudgeFactor = function(t){
@@ -106,7 +73,6 @@ class HopfTorus{
             return total;
         }
         this.fudgeFactor = fudgeFactor;
-
 
         let arcLength = function(t){
             //find the arclength of c(t) at parameter t;
@@ -163,9 +129,33 @@ class HopfTorus{
         //save it
         this.inverseArc = inverseArc;
 
+        let toFundamentalDomain = function(pt){
+            //FIX THIS FUNCTION TO BE BETTER, LATER
+            //get us into the right strip: we dont' actually care if x direction is within fundamental domain or not
+            //all our points are positive (so just need to move down if y is above height of fd)
+            let gen = new Vector2(latticeData.area/2,latticeData.length/2);
+            while(pt.y>(latticeData.length/2)){
+                pt = pt.sub(gen);
+            }
+
+          //  figure out the vertical shift that needs to happen
+          //   let vert = Math.floor(pt.y/(length/2));
+          //   //subtract the appropriate number of the generator:
+          //   pt.sub(new Vector2(area/2,length/2).multiplyScalar(vert));
+            //FIBER DIRECTION PARAMETERIZATION IS DEFINED EVERYWHERE: DON'T NEED TO GET IN THERE!
+            //now do the same for the horizontal (fiber) direction:
+            //at height y, we want x to be between a/l y and a/l y + 2PI
+            // let offset = pt.x - area/length*pt.y;
+            // let horiz = Math.floor(offset/(2.*Math.PI));
+            // pt.sub(new Vector2(2*Math.PI,0).multiplyScalar(horiz));
+            return pt;
+        }
+        this.toFundamentalDomain = toFundamentalDomain;
 
         let isometricImage = function(pt){
-            //take a point (u,v) in the plane and find its image on the torus!
+            //take a point (u,v) in the plane and find its image on the torus
+            //FUNDAMENTAL DOMAIN: (0,2PI) in U direction, to height (A/2, L/2).
+            pt = toFundamentalDomain(pt);
             let s = pt.x;
             let v = pt.y;
             //STEP 1: find inverse arclength of 2v
@@ -181,328 +171,99 @@ class HopfTorus{
         this.isometricImage = isometricImage;
 
 
-        let nonIsoTransitionMap = function(p){
-            //map from the plane to the plane
-            // (u,v) up to torus isometrically
-            //then down to s,t via simple parameterization
-            let u = p.x;
-            let v = p.y;
-            let f = fudgeFactor(v);
-            let L = arcLength(v);
-
-            let s = u  + f;
-            let t = L/2;
-
-            return new Vector2(s,t);
-        }
-        this.nonIsoTransitionMap = nonIsoTransitionMap;
-
-
-
     }
 
 
-    getCurve(curveFn, color=0x25178f, radius = 0.01,closed=false){
+    getSurface(color=glassColor, glass=false){
+        //now build the geometry of the hopf surface:
+        //this is a function on [0,2pi]x[0,2pi]
+        let coordCurve = this.coordCurve;
+        let parameterization = function(s,t,dest){
+            //s and t are in [0,1]x[0,1]:
+            let S = 2*Math.PI*s;
+            let T = 2.*Math.PI*t;
+            let angles = coordCurve(T);
+            let phi = angles.phi;
+            let theta = angles.theta;
+            let p4 =  toroidalCoords(theta+S,S,phi/2);
+            let p = stereoProj(p4);
+            dest.set(p.x,p.y,p.z);
+        }
+        let surfGeom = new ParametricGeometry(parameterization, this.res, this.res);
+        let surfMat = makeMaterial(color,glass);
+        return new Mesh(surfGeom, surfMat);
+    }
 
+
+    getLift(planecurve, radius=0.05, color =  redColor, glass=false){
+        //DOMAIN OF CURVE: [0,1]
+        //given a curve x->(s(x),t(x)) in the domain
+        //lift under isometry to hopf torus
+        let isometricImage = this.isometricImage;
         //the curve mesh
         let curvePts = [];
         let radiusValues = [];
         for(let i=0;i<this.res+1;i++){
-            let t = 2.*Math.PI * i/this.res;
-            let pt = curveFn(t);
+            let t = i/this.res;
+            let planarPt = planecurve(t);
+            let pt = isometricImage(planarPt);
             curvePts.push(pt);
             let r = radius*(1+pt.lengthSq());
             radiusValues.push(new Vector3(r,r,r));
         }
-
-        //this is a curve we can call with respect to arclength!
         let curve  = new CatmullRomCurve3(curvePts);
         let radii = new CatmullRomCurve3(radiusValues);
-        let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,clearcoat:1});
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
+        let mat = makeMaterial(color,glass);
         return new Mesh(curveGeom, mat);
     }
 
 
-
-
-
-    getPlaneCurve(curveFn, color=0x25178f, radius = 0.01,closed=false){
-
-        //the curve mesh
-        let curvePts = [];
-        let radiusValues = [];
-        for(let i=0;i<this.res+1;i++){
-            let t = 2.*Math.PI * i/this.res;
-            let pt = curveFn(t);
-            curvePts.push(pt);
+    getFiberAt(x,radius, color, glass=false){
+        let edgeGen = new Vector2(this.area/2,this.length/2);
+        let fiberCurve = function(s){
+            let origin = edgeGen.multiplyScalar(x);
+            return origin.add(2*Math.PI*s,0);
         }
-
-        //this is a curve we can call with respect to arclength!
-        let curve  = new CatmullRomCurve3(curvePts);
-        let mat = new MeshPhysicalMaterial({color:color, roughness:0.5,metalness:0,clearcoat:1});
-        let curveGeom = new TubeGeometry(curve, 2.*this.res,  radius,16, closed);
-        return new Mesh(curveGeom, mat);
+        return this.getLift(fiberCurve,radius,color,glass);
     }
 
-
-    getSurface(materialParams = defaultMatParams){
-
-        let mat = new MeshPhysicalMaterial(materialParams);
-
-        let surface = this.surface;
-        let paraFn = function(s,t,dest){
-            let S = 2.*Math.PI*s;
-            let T = 2.*Math.PI*t;
-            let q = surface(S,T);
-            let P = stereoProj(q);
-            dest.set(P.x,P.y,P.z);
-        };
-
-        let surfGeom = new ParametricGeometry(paraFn, this.res, this.res);
-       return new Mesh(surfGeom, mat);
-
-    }
-
-    getHopfFiber(angles,color=0x8f2117, radius=0.01){
-        //given theta and phi, compute the fiber of the hopf map thru this point of S2
-        let theta = angles.theta;
-        let phi = angles.phi;
-        //the curve mesh
-        let curvePts = [];
-        for(let i=0;i<this.res;i++){
-            let s = 2.*Math.PI*i/this.res;
-            let P = toroidalCoords(theta+s,s,phi/2);
-            let pt = stereoProj(P);
-            curvePts.push(pt);
+    getEdgeAt(x,radius, color, glass=false){
+        let edgeGen = new Vector2(this.area/2,this.length/2);
+        let edgeCurve = function(t){
+            let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
+            return origin.add(edgeGen.multiplyScalar(t));
         }
-
-        //this is a curve we can call with respect to arclength!
-        let curve  = new CatmullRomCurve3(curvePts);
-        let mat = new MeshPhysicalMaterial({color:color});
-        let curveGeom = new TubeGeometry(curve, 3.*this.res, radius, 8,true);
-        return new Mesh(curveGeom, mat);
-
+        return this.getLift(edgeCurve,radius,color,glass);
     }
 
-
-    getEdgeTranslate(x,color=0xa32017,radius=0.01){
-
-        //x is a PERCENTAGE OF ALL THE WAY ALONG THE EDGE: IN (0,1)
-
-
-        let isometricImage = this.isometricImage;
-        let area = this.area;
-        let length=this.length;
-
-        let curve = function(t){
-
-            //move horizontally along the fiber to get new point
-            //fiber has length 2Pi
-            let dist = 2.*Math.PI *x;
-
-            //draw translate of the curve connecting  (0,0) to (A/2,L/2)
-            let pt = new Vector2(t*area/(4*Math.PI)+dist, t*length/(4*Math.PI));
-            //now apply isometry
-            return isometricImage(pt);
-        }
-
-        return this.getCurve(curve,color,radius,true);
-    }
-
-    getIsometricCurve(planecurve,color,radius,closed){
-
-        let isometricImage = this.isometricImage;
-        let area = this.area;
-        let length=this.length;
-
-        let curve = function(t) {
-            let pt = planecurve(t);
-            return isometricImage(pt);
-        }
-
-        return this.getCurve(curve,color,radius,closed);
-    }
-
-
-    getFiberTranslate(x,color=0x161ba8,radius=0.01){
-
-        //x is a PERCENTAGE OF ALL THE WAY ALONG THE EDGE: IN (0,1)
-
-        //use isometric image to test it out (MUCH SLOWER THAN JUST USING FIBER COMMAND!)
-        let isometricImage = this.isometricImage;
-        let area = this.area;
-        let length=this.length;
-
-        let curve = function(t){
-            //translate along curve from (0,0) to (A/2,L/2):
-            //to go x percent is easy; just multiply endpoint by x
-            let pt = new Vector2(area/2, length/2).multiplyScalar(x);
-            pt.add(new Vector2(t,0));
-            //now apply isometry
-            return isometricImage(pt);
-        }
-
-        return this.getCurve(curve,color,radius,true);
-
-    }
-
-
-
-    getPointLattice(fiberOffset,edgeOffset,color=0x8c1a0f,radius=0.01){
-
-        let tau = new Vector2(this.area/(2), this.length/(2));
-        let xOffsetVec = new Vector3(fiberOffset,0,0).multiplyScalar(2*Math.PI);
-        let yOffsetVec = new Vector3(tau.x,tau.y,0).multiplyScalar(edgeOffset);
-        let pos = xOffsetVec.add(yOffsetVec);
-
-        let pt = this.isometricImage(pos);
-        let r2 = pt.lengthSq();
-
-        let pointGeom = new SphereGeometry(radius*(1+r2));
-        let pointMat = new MeshPhysicalMaterial({color:color,roughness:0.1,metalness:0,clearcoat:1});
-        let mesh = new Mesh(pointGeom,pointMat)
-        mesh.position.set(pt.x,pt.y,pt.z);
-        return mesh;
-
-    }
-
-
-    //takes in a point p=(x,y) in the plane
-    getPointXY(p, color=0x8c1a0f, radius =0.01){
-        //p is mathematica input [x,y] in the domain spanned by 1 and tau.
-        let P = new Vector2(p[0],p[1]).multiplyScalar(2.*Math.PI);
-
-        let pt = this.isometricImage(P);
-        let r2 = pt.lengthSq();
-
-        let pointGeom = new SphereGeometry(radius*(1+r2));
-        let pointMat = new MeshPhysicalMaterial({color:color,roughness:0.1,metalness:0,clearcoat:1});
-        let mesh = new Mesh(pointGeom,pointMat)
-        mesh.position.set(pt.x,pt.y,pt.z);
-        return mesh;
-    }
-
-
-
-    getGridlines(N, edgeColor, vertexColor, radius){
-
+    getGridlines(N, radius, color, glass=false){
         let lines = new Group();
-
         //get curves on the surface:
         for(let i=0; i<N+1; i++){
-            let horiz = this.getFiberTranslate(i/N,edgeColor,radius);
-            let vert = this.getEdgeTranslate(i/N,edgeColor,radius);
+            let horiz = this.getFiberTranslate(i/N,radius,color,glass);
+            let vert = this.getEdgeTranslate(i/N,radius,color,glass);
             lines.add(horiz);
             lines.add(vert);
         }
-
-        // //get vertices to go with these
-        // for(let i=0; i<N+1; i++){
-        //     for(let j=0; j<N+1; j++){
-        //         let pt = this.getPointLattice(i/N,j/N,vertexColor, 1.4*radius);
-        //         lines.add(pt);
-        //     }
-        // }
-
-        return lines;
-
-    }
-
-
-
-    getBaseSphere(color=0xa32017,radius=0.01){
-
-        let base = new Group();
-
-        //make the sphere.
-        //ITS A TINY SPHERE: RADIUS 1/2
-        let sphGeom = new SphereGeometry(0.5);
-        let sphMat = new MeshPhysicalMaterial({
-            color: 0xc9eaff,
-                //0xffffff,
-            metalness:0,
-            roughness:0.3,
-            transparent:true,
-            opacity:1,
-            transmission:0.95,
-            ior:1.4,
-            thickness:1,
-            clearcoat:1,
-        });
-        const sph = new Mesh(sphGeom,sphMat);
-        base.add(sph);
-
-
-        //make curve
-        let coordCurve = this.coordCurve;
-        let sphereCurve = function(t){
-            let P = sphCoords(coordCurve(t));
-            //display as x, z, -y
-           return new Vector3(P.x,P.z,-P.y).multiplyScalar(0.5);
-           // return P.multiplyScalar(0.5);
-        }
-        let curve = this.getCurve(sphereCurve, color, radius,true)
-        base.add(curve);
-
-        return base;
-
-    }
-
-
-    getTransitionEdge(x,color,radius){
-
-        //x is a percent distance along the curve on the sphere
-        let transition = this.nonIsoTransitionMap;
-        let area = this.area;
-        let length = this.length;
-        let curve = function(v){
-            //curve length is 2Pi:
-            let off = 2*Math.PI * x;
-            let q = new Vector2(area/2,length/2).divideScalar(2*Math.PI);
-            q.multiplyScalar(v);
-            q.add(new Vector2(off,0));
-            let p = transition(q);
-            return new Vector3(p.x,0,p.y);
-        }
-        return this.getPlaneCurve(curve,color,radius,false);
-    }
-
-
-    getTransitionFiber(x,color,radius){
-
-        //x is a percent distance along the curve on the sphere
-        let transition = this.nonIsoTransitionMap;
-        let fudge = this.fudgeFactor;
-        let curve = function(u){
-            //fiber length is 2Pi:
-            //getCurve already has 2PI built in, so just let s go from 0 to 1
-            let v = 2*Math.PI * x;
-            let q = new Vector2(u,v);
-            let p = transition(q);
-            return new Vector3(p.x,0,p.y);
-        }
-        return this.getPlaneCurve(curve,color,radius,false);
-    }
-
-
-
-    getTransitionGridlines(N, color, radius){
-
-        let lines = new Group();
-
-        //get curves on the surface:
-        for(let i=0; i<N+1; i++){
-            let horiz = this.getTransitionFiber(i/N,color,radius);
-            let vert = this.getTransitionEdge(i/N,color,radius);
-            lines.add(horiz);
-            lines.add(vert);
-        }
-
         return lines;
     }
 
+    getPoint(pt, radius=0.05, color=redColor, glass=false){
+        let q = this.isometricImage(pt);
+        let rescale = 1+q.lengthSq();
+        let geom = new SphereGeometry(radius*rescale);
+        let mat = makeMaterial(color,glass);
+        let mesh = new Mesh(geom, mat);
+        mesh.position.set(q.x,q.y,q.z);
+        return mesh;
+    }
 
+    // getPointFromData(dataPt,radius=0.05, color=redColor, glass=false){
+    //     //dataPt is [x,y] given in the lattice gen by 1, tau.
+    //     let pt = this.fromTauCoords(dataPt);
+    //     return this.getPoint(pt,radius,color,glass);
+    // }
 
 }
 

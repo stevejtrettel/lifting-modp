@@ -21,7 +21,7 @@ import {
 } from 'three-gpu-pathtracer';
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
-import HopfTorus from "../../items/HopfTorus";
+import HopfTorus from "../../items/HopfTorusOLD";
 
 
 // init scene and objects, and lights

@@ -23,7 +23,7 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import HopfTorus from "/items/HopfTorus2";
+import HopfTorus from "/items/HopfTorus";
 import {coordCurve, latticeData} from "/data/-4/tau";
 import data from "/data/-4/3"
 
