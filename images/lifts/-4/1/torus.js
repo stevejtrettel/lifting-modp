@@ -23,38 +23,46 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import HopfTorus from "../../../items/HopfTorus";
-import{tau,curveLength,curveArea,coordCurve} from "./tau";
-import{f5,f25} from "./points";
+import HopfTorus from "/items/HopfTorus2";
+import {coordCurve,latticeData} from "/data/-4/tau";
+import data from "/data/-4/1"
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
+
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
+
 const scene = new Scene();
 
 
 // the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,curveArea,curveLength);
+let torus = new HopfTorus(coordCurve,latticeData);
 
 
-////{color:0x36409c,roughness:0.2,metalness:0,clearcoat:1}
-// let surf = torus.getSurface();
-// scene.add(surf);
-//
-let f5vertices = new Group();
-scene.add(f5vertices);
+//drawing the torus surface in R3
+let surf = torus.getSurface();
+scene.add(surf);
 
-for(let i=0; i<f5.length; i++){
-    f5vertices.add(torus.getPointXY(f5[i],0x8c1a0f,0.05));
+
+//drawing points over finite field:
+let points = new Group();
+scene.add(points);
+for(let i=0; i<data.length;i++){
+    let pt = torus.fromTauCoords(data[i]);
+    points.add(torus.getPoint(pt));
 }
 
 
-// let fn = function(t){
-//     return new Vector2(0.3, 0.1).multiplyScalar(8.*t );
-// }
-// let curve = torus.getIsometricCurve(fn);
-// scene.add(curve);
+
+
+
 
 
 //
