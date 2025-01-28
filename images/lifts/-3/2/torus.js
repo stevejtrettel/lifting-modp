@@ -52,13 +52,13 @@ let surf = torus.getSurface();
 scene.add(surf);
 
 
-//drawing points over base field:
-let basePoints = new Group();
-scene.add(basePoints);
-for(let i=0; i<baseFieldData.length;i++){
-    let pt = torus.fromTauCoords(baseFieldData[i]);
-    basePoints.add(torus.getPoint(pt,0.075,0x1d7010));
-}
+// //drawing points over base field:
+// let basePoints = new Group();
+// scene.add(basePoints);
+// for(let i=0; i<baseFieldData.length;i++){
+//     let pt = torus.fromTauCoords(baseFieldData[i]);
+//     basePoints.add(torus.getPoint(pt,0.075,0x1d7010));
+// }
 
 
 
@@ -68,7 +68,7 @@ let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,0.05,greenColor));
+    points.add(torus.getPoint(pt,0.075,0x0f4709));
 }
 
 
