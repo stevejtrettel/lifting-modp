@@ -22,11 +22,12 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import{coordCurve,curveArea,curveLength} from "./data/-4/tau";
+import{coordCurve,curveArea,curveLength} from "./data/-3/tau";
 import HopfTorus from "./items/HopfTorus2";
 
 import {f5} from "./images/lifts/-4/points.js";
 
+import pts4 from "./data/-3/5-7/pts4.js";
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -45,9 +46,8 @@ const yellowColor = 0xffd738;
 // the computer for dealing with the hopf torus
 let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 
-// let surf = torus.getSurface();
-// scene.add(surf);
-
+let surf = torus.getSurface();
+scene.add(surf);
 
 //draw some curves!
 //
@@ -55,27 +55,40 @@ let torus = new HopfTorus(coordCurve,curveArea,curveLength);
 //     return new Vector2(2*Math.PI*t,0);
 // }
 // scene.add(torus.getLift(fiberCurve));
-//
 
+//
 // let edgeCurve = function(t){
 //     return new Vector2(curveArea,curveLength).multiplyScalar(t/2);
 // }
 // scene.add(torus.getLift(edgeCurve,0.05,blueColor));
 //
 //
-// let vertCurve = function(t){
-//     return new Vector2(0,curveLength/2).multiplyScalar(t);
+
+
+
+
+
+
+
+
+// let genCurve = function(t){
+//     return new Vector2(0.3,0.1).multiplyScalar(10*Math.PI*t);
 // }
-// scene.add(torus.getLift(vertCurve,0.05,greenColor));
-
-
-// for(let i=0;i<20;i++) {
-//     scene.add(torus.getPoint(new Vector2(0,Math.PI*i / 19)));
+// scene.add(torus.getLift(genCurve,0.02,blueColor));
+//
+// for(let i=0;i<10;i++) {
+//     scene.add(torus.getPoint(new Vector2(0.3,0.1).multiplyScalar(Math.PI*i)));
 // }
+//
 
 
-for(let i=0; i<f5.length;i++){
-    scene.add(torus.getPointFromData(f5[i]));
+
+
+
+
+
+for(let i=0; i<pts4.length;i++){
+    scene.add(torus.getPointFromData(pts4[i]));
 }
 
 //

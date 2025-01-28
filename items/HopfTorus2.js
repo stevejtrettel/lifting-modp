@@ -32,8 +32,10 @@ class HopfTorus{
         this.area = area;
 
         //the generators of the lattice in fiber, edge direction
-        this.fiberGenerator = new Vector2(2*Math.PI,0);
-        this.edgeGenerator = new Vector2(area/2,length/2);
+        let fiberGenerator =  new Vector2(2*Math.PI,0);
+        this.fiberGenerator = fiberGenerator;
+        let edgeGenerator = new Vector2(area/2,length/2);
+        this.edgeGenerator = edgeGenerator;
 
         this.res = 256;
 
@@ -112,28 +114,24 @@ class HopfTorus{
         //save it
         this.inverseArc = inverseArc;
 
-
-
         let toFundamentalDomain = function(pt){
-            //take a point (u,v) in the plane and find a representative in the fundamental domain:
-
-            //figure out the vertical shift that needs to happen
+          //  figure out the vertical shift that needs to happen
             let vert = Math.floor(pt.y/(length/2));
-            //add the appropriate number of the generator:
-            pt.add(new Vector2(area/2,length/2).multiplyScalar(vert));
-
-            //remove factors of 2Pi from fiber until in [0,2pi]
-            let u = pt.x % 2*Math.PI;
-            let v = pt.y;
-
-            return new Vector2(u,v);
+            //subtract the appropriate number of the generator:
+            pt.sub(new Vector2(area/2,length/2).multiplyScalar(vert));
+            //now do the same for the horizontal (fiber) direction:
+            //at height y, we want x to be between a/l y and a/l y + 2PI
+            let offset = pt.x - area/length*pt.y;
+            let horiz = Math.floor(offset/(2.*Math.PI));
+            pt.sub(new Vector2(2*Math.PI,0).multiplyScalar(horiz));
+            return pt;
         }
         this.toFundamentalDomain = toFundamentalDomain;
 
         let isometricImage = function(pt){
             //take a point (u,v) in the plane and find its image on the torus
             //FUNDAMENTAL DOMAIN: (0,2PI) in U direction, to height (A/2, L/2).
-           // pt = toFundamentalDomain(pt);
+            pt = toFundamentalDomain(pt);
             let s = pt.x;
             let v = pt.y;
             //STEP 1: find inverse arclength of 2v
@@ -158,7 +156,12 @@ class HopfTorus{
                 color:color,
                 roughness:0.1,
                 metalness:0,
-                clearcoat:1
+                clearcoat:1,
+                transparent:true,
+                opacity:1,
+                ior:1.05,
+                transmission:0.9,
+                thickness:0.2,
             });
 
         //now build the geometry of the hopf surface:
@@ -235,7 +238,6 @@ class HopfTorus{
     }
 
     getPoint(pt, radius=0.05, color=redColor, glass=false){
-        //let p = this.toFundamentalDomain(pt);
         let q = this.isometricImage(pt);
         let rescale = 1+q.lengthSq();
         let geom = new SphereGeometry(radius*rescale);
@@ -251,7 +253,7 @@ class HopfTorus{
         //get a point from our data set
         //these come in the form [x,y], using fundamental domain (1,tau)
         //need to scale up and turn into vector!
-        let pt = new Vector2(data[0],data[1]).multiplyScalar(2.*Math.PI);
+        let pt = new Vector2(data[0],data[1]).multiplyScalar(2*Math.PI);
         return this.getPoint(pt,radius, color,glass);
     }
 
