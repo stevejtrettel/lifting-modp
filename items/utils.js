@@ -11,7 +11,7 @@ let toroidalCoords = function(a,b,c){
 }
 
 let stereoProj = function(pt){
-    return new Vector3(pt.x,pt.y,pt.z).divideScalar(1.-pt.w);
+    return new Vector3(-pt.x,-pt.y,pt.z).divideScalar(1.-pt.w);
 }
 
 let sphCoords = function(angles){

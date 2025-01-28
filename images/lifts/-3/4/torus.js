@@ -66,15 +66,15 @@ scene.add(surf);
 //     let pt = torus.fromTauCoords(data1[i]);
 //     points1.add(torus.getPoint(pt,0.075,0x115708));
 // }
-//
-//
-// let points2 = new Group();
-// scene.add(points2);
-// for(let i=0; i<data2.length;i++){
-//     let pt = torus.fromTauCoords(data2[i]);
-//     points2.add(torus.getPoint(pt,0.05,0x216e1a));
-// }
 
+
+let points2 = new Group();
+scene.add(points2);
+for(let i=0; i<data2.length;i++){
+    let pt = torus.fromTauCoords(data2[i]);
+    points2.add(torus.getPoint(pt,0.05,redColor));
+}
+//398c31
 
 let points4 = new Group();
 scene.add(points4);
