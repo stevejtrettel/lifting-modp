@@ -23,22 +23,12 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import Grid3D from "../../items/Grid3D";
+import {colors} from "../../items/utils";
 
 // init scene and objects, and lights
 //--------------------------------------------
 
-//color scheme
-const glassColor =0xc9eaff;
-const redColor = 0xd43b3b;//0xe03d24
-const greenColor = 0x4fbf45;
-const blueColor = 0x4287f5;
-const yellowColor = 0xffd738;
-
-
-
 const scene = new Scene();
-
-
 
 let grid = new Grid3D(0.5);
 
@@ -144,7 +134,6 @@ function getGridIndex(sol){
 function getPosition(sol){
     //get the position in space to put a solution
     let location = new Vector3(sol[0][0],sol[0][1],sol[1][0]).multiplyScalar(0.5);
-    console.log(location);
     let layer = sol[1][1]+2;//so its still in 0 to 4
     location.add(translation[layer]);
     return location;
@@ -197,7 +186,7 @@ let coset = [
 ];
 
 
-function getRod(sol1, sol2,radius, color){
+function getRod(sol1, sol2, color,radius){
     //get two positions in space
     let pos1 = getPosition(sol1);
     let pos2 = getPosition(sol2);
@@ -224,13 +213,13 @@ function getRod(sol1, sol2,radius, color){
 
 
 //draw the edges of the subgroup
-// let subG = new Group();
-// scene.add(subG);
-//
-// for(let i=0;i<subgroup.length-1;i++){
-//     let edge = getRod(subgroup[i],subgroup[i+1],0.025,blueColor);
-//     subG.add(edge);
-// }
+let subG = new Group();
+scene.add(subG);
+
+for(let i=0;i<subgroup.length-1;i++){
+    let edge = getRod(subgroup[i],subgroup[i+1],colors.blue,0.025,false);
+    subG.add(edge);
+}
 
 //
 //draw the edges of the coset
@@ -238,20 +227,20 @@ let coS = new Group();
 scene.add(coS);
 
 for(let i=0;i<coset.length-1;i++){
-    let edge = getRod(coset[i],coset[i+1],0.025,0x6f4ede);
+    let edge = getRod(coset[i],coset[i+1],colors.blue, 0.025,false);
     coS.add(edge);
 }
 
 
 //draw the crosstracks
 
-// let tracks = new Group();
-// scene.add(tracks);
-//
-// for(let i=0;i<coset.length-1;i++){
-//     let edge = getRod(subgroup[i],coset[i],0.025,0xb54ad9);
-//     tracks.add(edge);
-// }
+let tracks = new Group();
+scene.add(tracks);
+
+for(let i=0;i<coset.length-1;i++){
+    let edge = getRod(subgroup[i],coset[i],colors.blue,0.025,false);
+    tracks.add(edge);
+}
 
 
 // spot light
@@ -320,8 +309,8 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
-camera.lookAt( 0, 0, 0 );
+camera.position.set( 1, 3, - 12 );
+camera.lookAt( 0, 4, 0 );
 
 
 // const camera = new PhysicalCamera( 60, window.innerWidth / window.innerHeight, 0.025, 500 );

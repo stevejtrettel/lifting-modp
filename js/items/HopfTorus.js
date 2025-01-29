@@ -10,18 +10,10 @@ import{
     toroidalCoords,
     stereoProj,
     makeMaterial,
+    colors
 } from "./utils";
 import ParametricGeometry from "./ParametricGeometry";
 import {VarTubeGeometry} from "./VarTubeGeometry";
-
-
-const glassColor =0xc9eaff;
-const redColor = 0xd43b3b;//0xe03d24
-const greenColor = 0x4fbf45;
-const blueColor = 0x4287f5;
-const yellowColor = 0xffd738;
-
-
 
 
 
@@ -57,7 +49,6 @@ class HopfTorus{
             }
             return total;
         }
-        this.fudgeFactor = fudgeFactor;
 
         let arcLength = function(t){
             //find the arclength of c(t) at parameter t;
@@ -82,7 +73,6 @@ class HopfTorus{
 
             return tot;
         }
-        this.arcLength = arcLength;
 
         let inverseArc = function(L){
             //find the t such that the curve on the 2 sphere has length L from o to t.
@@ -111,8 +101,6 @@ class HopfTorus{
 
             return t;
         }
-        //save it
-        this.inverseArc = inverseArc;
 
         let toFundamentalDomain = function(pt){
             //FIX THIS FUNCTION TO BE BETTER, LATER
@@ -155,11 +143,9 @@ class HopfTorus{
         }
         this.isometricImage = isometricImage;
 
-
     }
 
-
-    getSurface(color=glassColor, glass=false){
+    getSurface(color=colors.glass, glass=false){
         //now build the geometry of the hopf surface:
         //this is a function on [0,2pi]x[0,2pi]
         let coordCurve = this.coordCurve;
@@ -179,19 +165,30 @@ class HopfTorus{
         return new Mesh(surfGeom, surfMat);
     }
 
+    getSubSurface(parameterization, color=colors.glass, glass=false){
+        let isometricImage = this.isometricImage;
+        let surfParameterization = function(s,t,dest){
+            //s and t are in [0,1]x[0,1]: correct inputs for parameterization
+            let uv = parameterization(s,t);
+            let p = isometricImage(uv);
+            dest.set(p.x,p.y,p.z);
+        }
+        let surfGeom = new ParametricGeometry(parameterization, this.res, this.res);
+        let surfMat = makeMaterial(color,glass);
+        return new Mesh(surfGeom, surfMat);
+    }
 
-    getLift(planecurve, radius=0.05, color =  redColor, glass=false){
+    getLift(planecurve, color =  colors.red, radius=0.05,  glass=false){
         //DOMAIN OF CURVE: [0,1]
         //given a curve x->(s(x),t(x)) in the domain
         //lift under isometry to hopf torus
-        let isometricImage = this.isometricImage;
         //the curve mesh
         let curvePts = [];
         let radiusValues = [];
         for(let i=0;i<this.res+1;i++){
             let t = i/this.res;
             let planarPt = planecurve(t);
-            let pt = isometricImage(planarPt);
+            let pt = this.isometricImage(planarPt);
             curvePts.push(pt);
             let r = radius*(1+pt.lengthSq());
             radiusValues.push(new Vector3(r,r,r));
@@ -204,37 +201,37 @@ class HopfTorus{
     }
 
 
-    getFiberAt(x,radius, color, glass=false){
+    getFiberAt(x, color=colors.blue, radius=0.025, glass=false){
         let edgeGen = new Vector2(this.area/2,this.length/2);
         let fiberCurve = function(s){
             let origin = edgeGen.multiplyScalar(x);
             return origin.add(2*Math.PI*s,0);
         }
-        return this.getLift(fiberCurve,radius,color,glass);
+        return this.getLift(fiberCurve,color, radius, glass);
     }
 
-    getEdgeAt(x,radius, color, glass=false){
+    getEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
         let edgeGen = new Vector2(this.area/2,this.length/2);
         let edgeCurve = function(t){
             let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
             return origin.add(edgeGen.multiplyScalar(t));
         }
-        return this.getLift(edgeCurve,radius,color,glass);
+        return this.getLift(edgeCurve,color, radius, glass);
     }
 
-    getGridlines(N, radius, color, glass=false){
+    getGridlines(N, color= colors.blue, radius=0.025, glass=false){
         let lines = new Group();
         //get curves on the surface:
         for(let i=0; i<N+1; i++){
-            let horiz = this.getFiberTranslate(i/N,radius,color,glass);
-            let vert = this.getEdgeTranslate(i/N,radius,color,glass);
+            let horiz = this.getFiberTranslate(i/N,color,radius,glass);
+            let vert = this.getEdgeTranslate(i/N,color,radius,glass);
             lines.add(horiz);
             lines.add(vert);
         }
         return lines;
     }
 
-    getPoint(pt, radius=0.05, color=redColor, glass=false){
+    getPoint(pt,  color=colors.red, radius=0.05, glass=false){
         let q = this.isometricImage(pt);
         let rescale = 1+q.lengthSq();
         let geom = new SphereGeometry(radius*rescale);
@@ -243,12 +240,6 @@ class HopfTorus{
         mesh.position.set(q.x,q.y,q.z);
         return mesh;
     }
-
-    // getPointFromData(dataPt,radius=0.05, color=redColor, glass=false){
-    //     //dataPt is [x,y] given in the lattice gen by 1, tau.
-    //     let pt = this.fromTauCoords(dataPt);
-    //     return this.getPoint(pt,radius,color,glass);
-    // }
 
 }
 

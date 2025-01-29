@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,77 +22,54 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import Grid2D from "../../items/Grid2D";
-import {colors} from "../../items/utils";
+import {colors} from "/js/items/utils";
 
-
-// init scene and objects, and lights
-//--------------------------------------------
-
-
-//color scheme
-const glassColor =0xc9eaff;
-const redColor = 0xd43b3b;//0xe03d24
-const greenColor = 0x4fbf45;
-const blueColor = 0x4287f5;
-const yellowColor = 0xffd738;
-
-
+import FD from "/js/items/FD";
+import {coordCurve,latticeData} from "/data/-4/tau";
+import data from "/data/-4/4"
 
 
 
 const scene = new Scene();
 
+let fd = new FD(latticeData.tau,1);
 
-let grid = new Grid2D();
+let domain = fd.getParallelogram();
+domain.position.set(0,-0.01,0);
+scene.add(domain);
 
-//lines of a grid
-let gridlines = grid.getGridLines(2);
-scene.add(gridlines);
-
-//get vertices of grid.
-let vertices = grid.getGridVertices(2,colors.glass,0.075,true);
-scene.add(vertices);
-
-
-//position points and add to scene
-let solutions = [[2, -2], [1, 2], [-2, 1], [-1, 1], [0, 0], [-1, -1], [-2, -1], [1, -2], [2,
-    2]];
-
-
-let ellipticPts = new Group();
-scene.add(ellipticPts);
-
-for(let i=0; i<solutions.length; i++){
-    let pt = grid.getVertex(solutions[i],colors.red);
-    ellipticPts.add(pt)
-}
-
-
-//finally, add the point at infinity
-let infPos = [4,0];
-let inf = grid.getVertex(infPos,colors.red);
-ellipticPts.add(inf);
-
-
-
-//add in edges drawing the group structure
-
-let group = new Group();
-scene.add(group);
-
-
-let orbit = [infPos,[2, -2], [1, 2], [-2, 1], [-1, 1], [0, 0], [-1, -1], [-2, -1], [1, -2], [2,
-    2],infPos];
-
-
-for(let i=0; i<orbit.length-1;i++){
-    let edge = grid.getRod(orbit[i],orbit[i+1],colors.blue,0.025,false);
-    group.add(edge);
+//drawing points over finite field:
+let points = new Group();
+scene.add(points);
+for(let i=0; i<data.length;i++){
+    points.add(fd.getDataPoint(data[i],colors.red,0.01));
 }
 
 
 
+
+
+
+
+
+
+//
+// // area light for the scene:
+// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
+// areaLight.position.x = 1.5;
+// areaLight.position.y = 1.0;
+// areaLight.position.z = - 0.5;
+// areaLight.rotateZ( - Math.PI / 4 );
+// areaLight.rotateX( - Math.PI / 2 );
+// areaLight.isCircular = false;
+// scene.add( areaLight );
+//
+// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
+// redLight.position.y = 1.25;
+// redLight.position.z = - 3.5;
+// redLight.rotateX( Math.PI );
+// redLight.isCircular = false;
+// scene.add( redLight );
 
 
 
@@ -103,7 +80,7 @@ spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 2.0;
+spotLight.intensity = 5.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -136,16 +113,16 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(0.,-0.5,0);
+ground.position.set(-1.,-1,-1);
 scene.add(ground);
 
-// const backWall = new Mesh(
-//     new BoxGeometry( 100, 100, 0.1 ),
-//     new MeshPhysicalMaterial({
-//     }),
-// );
-// backWall.position.set(0,4,31);
-// scene.add(backWall);
+const backWall = new Mesh(
+    new BoxGeometry( 100, 100, 0.1 ),
+    new MeshPhysicalMaterial({
+    }),
+);
+backWall.position.set(0,4,10);
+scene.add(backWall);
 
 
 // environment for the scene
@@ -162,7 +139,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0, 4, - 7 );
+camera.position.set( 0,3,-1);
 camera.lookAt( 0, 0, 0 );
 
 
