@@ -48,7 +48,7 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(colors.glass, true);
+let surf = torus.getSurface(0xffffff, true);
 scene.add(surf);
 
 

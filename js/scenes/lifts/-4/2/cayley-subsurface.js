@@ -32,14 +32,6 @@ import data from "/data/-4/2"
 //--------------------------------------------
 
 
-const glassColor =0xc9eaff;
-const redColor = 0xd43b3b;//0xe03d24
-const greenColor = 0x4fbf45;
-const blueColor = 0x4287f5;
-const yellowColor = 0xffd738;
-
-
-
 const scene = new Scene();
 
 

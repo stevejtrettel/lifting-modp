@@ -41,7 +41,7 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(colors.glass, true);
+let surf = torus.getSurface(0xffffff, true);
 scene.add(surf);
 
 
@@ -56,6 +56,16 @@ for(let i=0; i<data.length;i++){
 
 
 //drawing edge!!!
+
+//for the subgroup
+let groupPath = function(t){
+    //get new initial direction: in unit square is 0.3, 0.1
+    let dir = torus.fromTauCoords([0.3,0.1]);
+    return dir.multiplyScalar(10*t);
+}
+scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
+
+
 
 
 
