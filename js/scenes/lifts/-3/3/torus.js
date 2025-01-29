@@ -25,7 +25,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 import {colors} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
-import data from "/data/-3/3"
+import data from "/data/-3/1"
 
 
 // init scene and objects, and lights
