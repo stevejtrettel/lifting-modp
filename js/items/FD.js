@@ -73,11 +73,19 @@ class FD{
         return new Mesh(geom, makeMaterial(color,glass));
     }
 
-    getGridLines(n,color=colors.glass, radius=0.025,glass=true){
-
+    getGridlines(N, color= colors.blue, radius=0.025, glass=false){
+        let lines = new Group();
+        //get curves on the surface:
+        for(let i=0; i<N+1; i++){
+            let horiz = this.getHorizontalAt(i/N,color,radius,glass);
+            let vert = this.getVerticalAt(i/N,color,radius,glass);
+            lines.add(horiz);
+            lines.add(vert);
+        }
+        return lines;
     }
 
-    getGridVertices(n,color=colors.glass,radius=0.05,glass=true){
+    getLatticePoints(n,color=colors.glass,radius=0.05,glass=true){
 
     }
 

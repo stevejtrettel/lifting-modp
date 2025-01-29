@@ -223,8 +223,8 @@ class HopfTorus{
         let lines = new Group();
         //get curves on the surface:
         for(let i=0; i<N+1; i++){
-            let horiz = this.getFiberTranslate(i/N,color,radius,glass);
-            let vert = this.getEdgeTranslate(i/N,color,radius,glass);
+            let horiz = this.getFiberAt(i/N,color,radius,glass);
+            let vert = this.getEdgeAt(i/N,color,radius,glass);
             lines.add(horiz);
             lines.add(vert);
         }

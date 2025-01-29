@@ -44,7 +44,7 @@ const scene = new Scene();
 
 //setup for our parallelogram
 let tau = new Vector2(1/2, Math.sqrt(3)/2);
-let fd = new FD(tau,1/2);
+let fd = new FD(tau,1);
 
 
 
@@ -69,14 +69,13 @@ let N = 3;
 // let grid1 = torus.getGridlines(N,col1,col1,0.012);
 // scene.add(grid1);
 
-let grid2 = fd.getGridlines(2*N,col2,col2,0.025);
+let grid2 = fd.getGridlines(2*N,col2,0.025);
 display.add(grid2);
 
-let grid3 = fd.getGridlines(4*N,col3,col3,0.016);
+let grid3 = fd.getGridlines(4*N,col3,0.016);
 display.add(grid3);
 
-
- display.rotateX(Math.PI/2);
+ // display.rotateX(Math.PI/2);
 //  display.position.set(0,1,0);
 
 // let grid = fd.getGridlines(50,redColor,redColor,0.003);

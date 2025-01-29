@@ -23,7 +23,7 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import Grid3D from "../../items/Grid3D";
-import {colors} from "../../items/utils";
+import {colors, makeMaterial} from "../../items/utils";
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -186,7 +186,7 @@ let coset = [
 ];
 
 
-function getRod(sol1, sol2, color,radius){
+function getRod(sol1, sol2, color,radius,glass){
     //get two positions in space
     let pos1 = getPosition(sol1);
     let pos2 = getPosition(sol2);
@@ -194,17 +194,7 @@ function getRod(sol1, sol2, color,radius){
     //make a line
     let line = new LineCurve3(pos1,pos2);
     let geo = new TubeGeometry(line,64,radius,8,false);
-    let mat = new MeshPhysicalMaterial({
-        color : color,
-        transparent:true,
-        clearcoat:1,
-        opacity:1,
-        transmission:0.9,
-        ior:1.5,
-        thickness:1,
-        roughness:0.2,
-    });
-    return new Mesh(geo, mat);
+    return new Mesh(geo, makeMaterial(color,glass));
 }
 
 
