@@ -2,6 +2,7 @@ import {
     Vector2,
     Vector3,
     MeshPhysicalMaterial, Mesh, CatmullRomCurve3, SphereGeometry, Group,
+    DoubleSide,
 } from "three";
 
 
@@ -173,8 +174,10 @@ class HopfTorus{
             let p = isometricImage(uv);
             dest.set(p.x,p.y,p.z);
         }
-        let surfGeom = new ParametricGeometry(parameterization, this.res, this.res);
+        let surfGeom = new ParametricGeometry(surfParameterization,512,512);
+        surfGeom.computeVertexNormals();//recompute normal vectors
         let surfMat = makeMaterial(color,glass);
+        surfMat.side = DoubleSide;
         return new Mesh(surfGeom, surfMat);
     }
 

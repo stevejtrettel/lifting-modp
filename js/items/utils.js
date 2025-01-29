@@ -1,4 +1,4 @@
-import {MeshPhysicalMaterial, Vector3, Vector4} from "three";
+import {DoubleSide, MeshPhysicalMaterial, Vector3, Vector4} from "three";
 
 
 let toroidalCoords = function(a,b,c){

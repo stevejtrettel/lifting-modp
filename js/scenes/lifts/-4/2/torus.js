@@ -22,8 +22,8 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-
-import HopfTorus from "/items/HopfTorus";
+import {colors} from "../../../../items/utils";
+import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-4/tau";
 import data from "/data/-4/2"
 
@@ -49,20 +49,33 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 //drawing the torus surface in R3
 let surf = torus.getSurface();
-scene.add(surf);
+//scene.add(surf);
 
 
+
+
+//parametric surface for subsurf
+let strip = function(s,t){
+    let dir1 = torus.fromTauCoords([1,0]);
+    let dir2 = torus.fromTauCoords([0.3,0.1]);
+    dir1.multiplyScalar(0.5*s);
+    dir2.multiplyScalar(10*t);
+    return dir2.add(dir1);
+}
+
+let subsurf = torus.getSubSurface(strip,colors.glass,false);
+scene.add(subsurf);
 
 //drawing points over finite field:
 let points = new Group();
 scene.add(points);
 
 
+//points of hte group
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
+    points.add(torus.getPoint(pt,colors.red));
 }
-
 
 
 //ADD EDGES!!!!
@@ -73,7 +86,7 @@ let subCurve = function(t){
     let dir = torus.fromTauCoords([0.3,0.1]);
     return dir.multiplyScalar(10*t);
 }
-scene.add(torus.getLift(subCurve,0.02,blueColor,false));
+scene.add(torus.getLift(subCurve,colors.blue,0.02,false));
 
 
 //for the coset
@@ -84,7 +97,9 @@ let cosCurve = function(t){
     let offset = torus.fromTauCoords([0.,0.5]);
     return dir.add(offset);
 }
-scene.add(torus.getLift(cosCurve,0.02,yellowColor,false));
+scene.add(torus.getLift(cosCurve,colors.blue,0.02,false));
+
+
 
 
 //for the edges in-between
@@ -99,7 +114,7 @@ for(let i=0; i<10; i++){
     let curve = function(t){
         return start.clone().add(offset.clone().multiplyScalar(t));
     }
-    tracks.add(torus.getLift(curve,0.02,0x7d32a8));
+    tracks.add(torus.getLift(curve,colors.yellow,0.02,false));
 }
 
 
@@ -166,13 +181,13 @@ const ground = new Mesh(
 ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-// const backWall = new Mesh(
-//     new BoxGeometry( 100, 100, 0.1 ),
-//     new MeshPhysicalMaterial({
-//     }),
-// );
-// backWall.position.set(0,4,31);
-// scene.add(backWall);
+const backWall = new Mesh(
+    new BoxGeometry( 100, 100, 0.1 ),
+    new MeshPhysicalMaterial({
+    }),
+);
+backWall.position.set(0,4,10);
+scene.add(backWall);
 
 
 // environment for the scene
