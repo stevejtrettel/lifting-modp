@@ -228,7 +228,7 @@ let tracks = new Group();
 scene.add(tracks);
 
 for(let i=0;i<coset.length-1;i++){
-    let edge = getRod(subgroup[i],coset[i],colors.blue,0.025,false);
+    let edge = getRod(subgroup[i],coset[i],colors.yellow,0.025,false);
     tracks.add(edge);
 }
 
