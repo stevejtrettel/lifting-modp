@@ -50,24 +50,67 @@ for(let i=0; i<data.length;i++){
 
 
 //draw the group orbit:
+//
+// //the original group
+// let orbit = new Group();
+// scene.add(orbit);
+// orbit.add(fd.getLine([0,0],[1,1/3],colors.blue,0.02));
+// orbit.add(fd.getLine([0,1/3],[1,2/3],colors.blue,0.02));
+// orbit.add(fd.getLine([0,2/3],[1,1],colors.blue,0.02));
+//
+//
+// //the coset
+// let orbit2 = new Group();
+// scene.add(orbit2);
+// orbit2.add( fd.getLine([0,1/6],[1,1/2],0x2866c9,0.02));
+// orbit2.add(fd.getLine([0,1/2],[1,5/6],0x2866c9,0.02));
+// orbit2.add(fd.getLine([0,5/6],[1/2,1],0x2866c9,0.02));
+// orbit2.add(fd.getLine([1/2,0],[1,1/6],0x2866c9,0.02));
+//
+// //all the edges!
+// //these come from adding (1/2,0) to each point!!!
+// //here are the points of the orig group (each connected to a pt of coset)
+// //    [0,0],
+// //     [0.1, 0.7],
+// //     [0.2, 0.4],
+// //     [ 0.3, 0.1],
+// //     [0.4, 0.8],
+// //     [ 0.5, 0.5],
+// //     [0.6, 0.2],
+// //     [ 0.7, 0.9],
+// //     [0.8, 0.6],
+// //     [ 0.9, 0.3]
+//
+//
+// let tracks = new Group();
+// scene.add(tracks);
+// tracks.add(fd.getLine([0,0],[0.5,0],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.1,0.7],[0.6,0.7],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.2,0.4],[0.7,0.4],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.3,0.1],[0.8,0.1],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.4,0.8],[0.9,0.8],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.5,0.5],[1,0.5],colors.yellow,0.02));
+//
+// //some of the remaining need two pieces
+// tracks.add(fd.getLine([0.6,0.2],[1,0.2],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.2],[0.1,0.2],colors.yellow,0.02));
+//
+// tracks.add(fd.getLine([0.7,0.9],[1,0.9],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.9],[0.2,0.9],colors.yellow,0.02));
+//
+// tracks.add(fd.getLine([0.8,0.6],[1,0.6],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.6],[0.3,0.6],colors.yellow,0.02));
+//
+// tracks.add(fd.getLine([0.9,0.3],[1,0.3],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.3],[0.4,0.3],colors.yellow,0.02));
+//
+//
 
-//the original group
-let orbit = new Group();
-scene.add(orbit);
-orbit.add(fd.getLine([0,0],[1,1/3],colors.blue,0.02));
-orbit.add(fd.getLine([0,1/3],[1,2/3],colors.blue,0.02));
-orbit.add(fd.getLine([0,2/3],[1,1],colors.blue,0.02));
 
 
-//the coset
-let orbit2 = new Group();
-scene.add(orbit2);
-orbit2.add( fd.getLine([0,1/6],[1,1/2],0x2866c9,0.02));
-orbit2.add(fd.getLine([0,1/2],[1,5/6],0x2866c9,0.02));
-orbit2.add(fd.getLine([0,5/6],[1/2,1],0x2866c9,0.02));
-orbit2.add(fd.getLine([1/2,0],[1,1/6],0x2866c9,0.02));
 
-//all the edges!
+
+
 
 
 
