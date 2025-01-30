@@ -23,7 +23,7 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import {colors} from "../../../../items/utils";
+import {colors,redShades} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve, latticeData} from "/data/-4/tau";
 import data from "/data/-4/4"
@@ -57,7 +57,7 @@ scene.add(points);
 
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,colors.red,0.03));
+    points.add(torus.getPoint(pt,redShades.medium,0.03));
 }
 
 

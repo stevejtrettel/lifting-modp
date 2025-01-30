@@ -22,22 +22,14 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-
-import HopfTorus from "/items/HopfTorus";
+import {colors} from "../../../../items/utils";
+import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
-import baseFieldData from "/data/-3/1"
 import data from "/data/-3/2"
 
 
 // init scene and objects, and lights
 //--------------------------------------------
-
-
-const glassColor =0xc9eaff;
-const redColor = 0xd43b3b;//0xe03d24
-const greenColor = 0x4fbf45;
-const blueColor = 0x4287f5;
-const yellowColor = 0xffd738;
 
 
 const scene = new Scene();
@@ -48,17 +40,8 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface();
+let surf = torus.getSurface(0xffffff,true);
 scene.add(surf);
-
-
-// //drawing points over base field:
-// let basePoints = new Group();
-// scene.add(basePoints);
-// for(let i=0; i<baseFieldData.length;i++){
-//     let pt = torus.fromTauCoords(baseFieldData[i]);
-//     basePoints.add(torus.getPoint(pt,0.075,0x1d7010));
-// }
 
 
 
@@ -68,7 +51,7 @@ let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,0.075,0x0f4709));
+    points.add(torus.getPoint(pt,0x0f4709,0.075,));
 }
 
 

@@ -11,7 +11,7 @@ let toroidalCoords = function(a,b,c){
 }
 
 let stereoProj = function(pt){
-    return new Vector3(-pt.x,-pt.y,pt.z).divideScalar(1.-pt.w);
+    return new Vector3(pt.x,pt.y,pt.z).divideScalar(1.-pt.w);
 }
 
 let sphCoords = function(angles){
@@ -67,6 +67,12 @@ let colors = {
     glass:0xc9eaff
 }
 
+let redShades = {
+    light: 0xed5858,
+    medium: 0xd43b3b,
+    dark: 0x991212,
+};
+
 
 export{
     stereoProj,
@@ -77,4 +83,6 @@ export{
     sphLengthInverse,
     makeMaterial,
     colors,
+    redShades,
 }
+

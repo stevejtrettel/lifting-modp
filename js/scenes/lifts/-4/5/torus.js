@@ -22,7 +22,7 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
+import {colors,redShades} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve, latticeData} from "/data/-4/tau";
 import data from "/data/-4/5"
@@ -53,66 +53,9 @@ scene.add(points);
 
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,0xdb355e,0.015));
+    points.add(torus.getPoint(pt,redShades.light,0.015));
 }
 
-
-
-//ADD EDGES!!!!
-
-// //for the subgroup
-// let subCurve = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = toHopfLattice([0.3,0.1]);
-//     return dir.multiplyScalar(10*t);
-// }
-// scene.add(torus.getLift(subCurve,0.02,blueColor,false));
-//
-//
-// //for the coset
-// let cosCurve = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = toHopfLattice([0.3,0.1]);
-//     dir.multiplyScalar(10*t);
-//     let offset = toHopfLattice([0.,0.5]);
-//     return dir.add(offset);
-// }
-// scene.add(torus.getLift(cosCurve,0.02,yellowColor,false));
-//
-//
-// //for the edges in-between
-// let tracks = new Group();
-// scene.add(tracks);
-//
-// for(let i=0; i<10; i++){
-//
-//     let start = toHopfLattice([0.3,0.1]);
-//     start.multiplyScalar(i);
-//     let offset = toHopfLattice([0.5,0.]);
-//     let curve = function(t){
-//         return start.clone().add(offset.clone().multiplyScalar(t));
-//     }
-//     tracks.add(torus.getLift(curve,0.02,0x7d32a8));
-// }
-
-
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
 
 
 
