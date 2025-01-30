@@ -61,11 +61,16 @@ let makeMaterial = function(color=glassColor, glass=false){
 
 let colors = {
     red: 0xd43b3b,
-    blue: 0x4287f5,
+    orange:0xc25b2b,
+    yellow:0xe8ac2a,
     green: 0x43a33b,//0x4fbf45,
-    yellow:0xffd738,
+    blue: 0x4287f5,
+    purple: 0x7d46bd,
+    pink: 0xcf48bf,
     glass:0xc9eaff
 }
+
+
 
 let redShades = {
     light: 0xed5858,
