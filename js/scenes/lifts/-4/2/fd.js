@@ -23,10 +23,9 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import {colors} from "/js/items/utils";
-
 import FD from "/js/items/FD";
 import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
+import data from "/data/-4/2"
 
 
 
@@ -52,19 +51,23 @@ for(let i=0; i<data.length;i++){
 
 //draw the group orbit:
 
-// let orbit = new Group();
-// scene.add(orbit);
-//
-//
-// let curve1 = fd.getLine([0,0],[1,1/3],colors.blue,0.02);
-// orbit.add(curve1);
-//
-// let curve2 = fd.getLine([0,1/3],[1,2/3],colors.blue,0.02);
-// orbit.add(curve2);
-//
-// let curve3 = fd.getLine([0,2/3],[1,1],colors.blue,0.02);
-// orbit.add(curve3);
-//
+//the original group
+let orbit = new Group();
+scene.add(orbit);
+orbit.add(fd.getLine([0,0],[1,1/3],colors.blue,0.02));
+orbit.add(fd.getLine([0,1/3],[1,2/3],colors.blue,0.02));
+orbit.add(fd.getLine([0,2/3],[1,1],colors.blue,0.02));
+
+
+//the coset
+let orbit2 = new Group();
+scene.add(orbit2);
+orbit2.add( fd.getLine([0,1/6],[1,1/2],0x2866c9,0.02));
+orbit2.add(fd.getLine([0,1/2],[1,5/6],0x2866c9,0.02));
+orbit2.add(fd.getLine([0,5/6],[1/2,1],0x2866c9,0.02));
+orbit2.add(fd.getLine([1/2,0],[1,1/6],0x2866c9,0.02));
+
+//all the edges!
 
 
 

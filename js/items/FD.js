@@ -37,7 +37,9 @@ class FD{
         let pts = [];
         for(let i=0; i<100; i++){
             let t = i/99;
-            pts.push(fn(t));
+            let p = fn(t);
+            let pt = new Vector3(p.x,0,p.z);
+            pts.push(pt);
         }
         let curve = new CatmullRomCurve3(pts);
         let geom = new TubeGeometry(curve,64,radius);
@@ -57,9 +59,15 @@ class FD{
         return this.getPoint(pos,color,radius,glass);
     }
 
+    getLine(start,end,color=colors.blue,radius=0.025,glass=false){
+        let line = new LineCurve3(new Vector3(start[0],0,start[1]),new Vector3(end[0],0,end[1]));
+        let geom = new TubeGeometry(line,64,radius);
+        return new Mesh(geom, makeMaterial(color,glass));
+    }
+
     getHorizontalAt(x,color=colors.blue,radius=0.025,glass=false){
         let start = new Vector3(this.tau.x, 0, this.tau.y).multiplyScalar(x);
-        let end = start.clone().add(new Vector2(this.width,0));
+        let end = start.clone().add(new Vector3(this.width,0,0));
         let line = new LineCurve3(start,end);
         let geom = new TubeGeometry(line,64,radius);
         return new Mesh(geom, makeMaterial(color,glass));

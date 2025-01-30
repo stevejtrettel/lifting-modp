@@ -89,7 +89,7 @@ let cosCurve = function(t){
     let offset = torus.fromTauCoords([0.,0.5]);
     return dir.add(offset);
 }
-scene.add(torus.getLift(cosCurve,colors.blue,0.02,false));
+scene.add(torus.getLift(cosCurve,0x2866c9,0.02,false));
 
 
 
