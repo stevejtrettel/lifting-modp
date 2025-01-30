@@ -79,6 +79,30 @@ let redShades = {
 };
 
 
+let yellowShades = {
+    medium : 0xe8ac2a,
+}
+
+
+let greenShades = {
+    dark: 0x0f4709,
+    medium: 0x43a33b,
+    light: 0x43a33b,
+}
+
+let blueShades = {
+    dark: 0xf3c85,
+    medium: 0x3478e3,
+    light:0x5d9bfc,
+}
+
+
+let purpleShades = {
+    medium: 0x7d46bd,
+}
+
+
+
 export{
     stereoProj,
     toroidalCoords,
@@ -89,5 +113,7 @@ export{
     makeMaterial,
     colors,
     redShades,
+    blueShades,
+    greenShades,
 }
 
