@@ -43,7 +43,7 @@ let hopf = new HopfPreimage();
 
 base.add(hopf.getBase());
 
-let pt1 = {theta:0,phi:Math.PI/2};
+let pt1 = {theta:0,phi:0.6*Math.PI};
 base.add(hopf.getBasePoint(pt1,colors.red));
 fibers.add(hopf.getPreimagePoint(pt1,colors.red));
 
