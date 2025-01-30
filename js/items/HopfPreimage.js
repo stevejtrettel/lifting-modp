@@ -1,4 +1,5 @@
-import {CatmullRomCurve3, Group, Mesh, MeshPhysicalMaterial, SphereGeometry, TubeGeometry, Vector3} from "three";
+import {CatmullRomCurve3, Group, Mesh, MeshPhysicalMaterial,
+    SphereGeometry, TubeGeometry, Vector3, DoubleSide} from "three";
 
 import {sphCoords,makeMaterial, stereoProj, toroidalCoords,colors} from "./utils";
 import ParametricGeometry from "./ParametricGeometry";
@@ -11,15 +12,19 @@ import {VarTubeGeometry} from "./VarTubeGeometry";
 //also can render out the base
 
 
+let equator = function(t){
+    return { theta: t, phi: Math.PI/2};
+}
+
 class HopfPreimage{
-    constructor(coordCurve) {
+    constructor(coordCurve = equator) {
 
         this.coordCurve = coordCurve;
         this.baseRad = 0.5;
 
     }
 
-    getPreimageCurve(scale=0.2,color=colors.glass,glass=false){
+    getPreimageCurve(color=colors.glass,glass=false){
         //preimage of entire curve = a surface
 
         //now build the geometry of the hopf surface:
@@ -33,20 +38,20 @@ class HopfPreimage{
             let phi = angles.phi;
             let theta = angles.theta;
             let p4 =  toroidalCoords(theta+S,S,phi/2);
-            let p = stereoProj(p4).multiplyScalar(scale);
+            let p = stereoProj(p4);
             dest.set(p.x,p.y,p.z);
         }
         let surfGeom = new ParametricGeometry(parameterization, 256,256);
         let surfMat = makeMaterial(color,glass);
+        surfMat.side = DoubleSide;
         let mesh =  new Mesh(surfGeom, surfMat);
         return mesh;
     }
 
-    getPreimagePoint(t,color=colors.blue,radius=0.025,glass=false){
-        //preimage of c(t) along curve
-        let ang = this.coordCurve(t);
-        let theta = ang.theta;
-        let phi = ang.phi;
+
+    getPreimagePoint(angles, color=colors.blue,radius=0.025,glass=false){
+        let theta = angles.theta;
+        let phi = angles.phi;
 
         //the curve mesh
         let curvePts = [];
@@ -66,11 +71,16 @@ class HopfPreimage{
         return new Mesh(curveGeom, mat);
     }
 
-    getBase(){
+    getPreimagePointOnCurve(t,color=colors.blue,radius=0.025,glass=false){
+        let ang = this.coordCurve(t);
+       return this.getPreimagePoint(ang,color,radius,glass);
+    }
+
+    getBase(color=colors.glass){
         //get glass sphere for base
         let geo = new SphereGeometry(this.baseRad);
         let mat = new MeshPhysicalMaterial({
-            color:colors.glass,
+            color:color,
             transparent:true,
             opacity:1,
             transmission:0.9,
@@ -83,14 +93,19 @@ class HopfPreimage{
         return new Mesh(geo,mat);
     }
 
-    getBasePoint(t, color=colors.blue, radius=0.025,glass=false){
-        //get point c(t) along curve
-        let pt = sphCoords(this.coordCurve(t));
+    getBasePoint(angles,color=colors.blue,radius=0.05,glass=false){
+        let pt = sphCoords(angles).multiplyScalar(this.baseRad);
         let geo = new SphereGeometry(radius);
         let mat = makeMaterial(color,glass);
         let mesh = new Mesh(geo,mat);
-        mesh.position.set(pt.x,pt.y,pt.z);
+        mesh.position.set(pt.x,pt.z,-pt.y);
         return mesh;
+    }
+
+    getBasePointOnCurve(t,color=colors.blue, radius=0.05,glass=false){
+        //get point c(t) along curve
+        let angles = this.coordCurve(t);
+        return this.getBasePoint(angles,color,radius,glass);
     }
 
     getBaseCurve(color=colors.blue,radius=0.025,glass=false){
@@ -102,7 +117,7 @@ class HopfPreimage{
             pts.push(new Vector3(p.x,p.z,-p.y).multiplyScalar(this.baseRad));
         }
         let curve = new CatmullRomCurve3(pts);
-        let geo = new TubeGeometry(curve, 256,radius,8,true);
+        let geo = new TubeGeometry(curve, 256,radius,8,false);
         let mat = makeMaterial(color,glass);
         return new Mesh(geo,mat);
     }
