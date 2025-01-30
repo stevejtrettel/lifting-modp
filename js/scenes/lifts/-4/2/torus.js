@@ -49,73 +49,22 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 //drawing the torus surface in R3
 let surf = torus.getSurface();
-//scene.add(surf);
+scene.add(surf);
+ // scene.add(torus.getGridlines(5));
 
 
-
-
-//parametric surface for subsurf
-let strip = function(s,t){
-    let dir1 = torus.fromTauCoords([1,0]);
-    let dir2 = torus.fromTauCoords([0.3,0.1]);
-    dir1.multiplyScalar(0.5*s);
-    dir2.multiplyScalar(10*t);
-    return dir2.add(dir1);
-}
-
-let subsurf = torus.getSubSurface(strip,colors.glass,false);
-scene.add(subsurf);
 
 //drawing points over finite field:
 let points = new Group();
 scene.add(points);
 
 
-//points of hte group
+//points of the group
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
     points.add(torus.getPoint(pt,colors.red));
 }
 
-
-//ADD EDGES!!!!
-
-//for the subgroup
-let subCurve = function(t){
-    //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([0.3,0.1]);
-    return dir.multiplyScalar(10*t);
-}
-scene.add(torus.getLift(subCurve,colors.blue,0.02,false));
-
-
-//for the coset
-let cosCurve = function(t){
-    //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([0.3,0.1]);
-    dir.multiplyScalar(10*t);
-    let offset = torus.fromTauCoords([0.,0.5]);
-    return dir.add(offset);
-}
-scene.add(torus.getLift(cosCurve,colors.blue,0.02,false));
-
-
-
-
-//for the edges in-between
-let tracks = new Group();
-scene.add(tracks);
-
-for(let i=0; i<10; i++){
-
-    let start = torus.fromTauCoords([0.3,0.1]);
-    start.multiplyScalar(i);
-    let offset = torus.fromTauCoords([0.5,0.]);
-    let curve = function(t){
-        return start.clone().add(offset.clone().multiplyScalar(t));
-    }
-    tracks.add(torus.getLift(curve,colors.yellow,0.02,false));
-}
 
 
 //

@@ -185,7 +185,6 @@ class HopfTorus{
         //DOMAIN OF CURVE: [0,1]
         //given a curve x->(s(x),t(x)) in the domain
         //lift under isometry to hopf torus
-        //the curve mesh
         let curvePts = [];
         let radiusValues = [];
         for(let i=0;i<this.res+1;i++){
@@ -196,6 +195,7 @@ class HopfTorus{
             let r = radius*(1+pt.lengthSq());
             radiusValues.push(new Vector3(r,r,r));
         }
+        console.log(curvePts);
         let curve  = new CatmullRomCurve3(curvePts);
         let radii = new CatmullRomCurve3(radiusValues);
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
@@ -206,18 +206,19 @@ class HopfTorus{
 
     getFiberAt(x, color=colors.blue, radius=0.025, glass=false){
         let edgeGen = new Vector2(this.area/2,this.length/2);
+        let origin = edgeGen.multiplyScalar(x);
+        let dir = new Vector2(2*Math.PI,0);
         let fiberCurve = function(s){
-            let origin = edgeGen.multiplyScalar(x);
-            return origin.add(2*Math.PI*s,0);
+            return origin.clone().add(dir.clone().multiplyScalar(s));
         }
         return this.getLift(fiberCurve,color, radius, glass);
     }
 
     getEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
-        let edgeGen = new Vector2(this.area/2,this.length/2);
+        let dir = new Vector2(this.area/2,this.length/2);
+        let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
         let edgeCurve = function(t){
-            let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
-            return origin.add(edgeGen.multiplyScalar(t));
+            return origin.clone().add(dir.clone().multiplyScalar(t));
         }
         return this.getLift(edgeCurve,color, radius, glass);
     }
