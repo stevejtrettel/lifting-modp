@@ -25,7 +25,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import {colors} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-3/tau";
+import {coordCurve,latticeData} from "/data/-7/tau";
 
 
 
@@ -51,9 +51,9 @@ let real1 = function(t){
     //generator in fiber direction
     let dir = torus.fromTauCoords([1,0]);
     dir.multiplyScalar(t);
-    return dir.add(torus.fromTauCoords([0,0.42]));
+    return dir.add(torus.fromTauCoords([0,0.1]));
 }
-scene.add(torus.getLift(real1,colors.green,0.04,false));
+scene.add(torus.getLift(real1,colors.blue,0.04,false));
 
 
 
@@ -146,7 +146,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0.1, 10, -0.1 );
 camera.lookAt( 0, 0, 0 );
 
 

@@ -41,7 +41,7 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff,true);
+let surf = torus.getSurface();
 scene.add(surf);
 
 
@@ -50,7 +50,7 @@ let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,blueShades.dark,0.05));
+    points.add(torus.getPoint(pt,blueShades.medium,0.05));
 }
 
 

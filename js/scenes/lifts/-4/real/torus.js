@@ -61,7 +61,7 @@ let real2 = function(t){
     dir.multiplyScalar(t);
     return dir.add(torus.fromTauCoords([0.5,0]));
 }
-scene.add(torus.getLift(real2,colors.blue,0.02,false));
+scene.add(torus.getLift(real2,colors.red,0.04,false));
 
 
 

@@ -25,14 +25,13 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import {colors} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-3/tau";
+import {coordCurve,latticeData} from "/data/-7/tau";
 
+import data from "/data/-7/1"
 
 
 // init scene and objects, and lights
 //--------------------------------------------
-
-
 
 const scene = new Scene();
 
@@ -45,15 +44,15 @@ let torus = new HopfTorus(coordCurve,latticeData);
 let surf = torus.getSurface(0xffffff,true);
 scene.add(surf);
 
-//draw the two circles that are the real points:
-//this is not a rectangle, so only one real component
-let real1 = function(t){
-    //generator in fiber direction
-    let dir = torus.fromTauCoords([1,0]);
-    dir.multiplyScalar(t);
-    return dir.add(torus.fromTauCoords([0,0.42]));
+
+//drawing points over finite field:
+let points = new Group();
+scene.add(points);
+for(let i=0; i<data.length;i++){
+    let pt = torus.fromTauCoords(data[i]);
+    points.add(torus.getPoint(pt,colors.blue,0.1));
 }
-scene.add(torus.getLift(real1,colors.green,0.04,false));
+
 
 
 
