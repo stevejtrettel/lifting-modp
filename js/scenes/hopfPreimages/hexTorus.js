@@ -50,8 +50,8 @@ let N = 75;
 //get curves on the surface:
 for(let i=0; i<N+1; i++){
     let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-    let vert = torus.getEdgeAt(i/N,colors.green,0.06,false);
-    let opp = torus.getOppEdgeAt(i/N,colors.blue,0.06,false);
+    let vert = torus.getEdgeAt(i/N,colors.orange,0.006,false);
+    let opp = torus.getOppEdgeAt(i/N,colors.yellow,0.006,false);
     lines.add(horiz);
     lines.add(vert);
     lines.add(opp);
