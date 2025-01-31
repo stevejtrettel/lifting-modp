@@ -119,7 +119,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0.1,6,-0.1 );
+camera.position.set( 0.1, 10, - 0.1 );
 camera.lookAt( 0, 0, 0 );
 
 

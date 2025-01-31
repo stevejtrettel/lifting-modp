@@ -117,7 +117,7 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(-1.,-2,-1);
 scene.add(ground);
 
 // const backWall = new Mesh(
@@ -143,7 +143,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0.1, 10, - 0.1 );
 camera.lookAt( 0, 0, 0 );
 
 
