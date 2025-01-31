@@ -30,7 +30,7 @@ class HopfTorus{
         this.tau = latticeData.tau;
         this.fromTauCoords = latticeData.fromTauCoords;
 
-        this.res = 512;
+        this.res = 256;
 
         //auxiliary functions for building the actual isometry
         let fudgeFactor = function(t){
@@ -181,7 +181,7 @@ class HopfTorus{
         return new Mesh(surfGeom, surfMat);
     }
 
-    getLift(planecurve, color =  colors.red, radius=0.05,  glass=false){
+    getLift(planecurve, color =  colors.red, radius=0.05,  glass=false,closed = false){
         //DOMAIN OF CURVE: [0,1]
         //given a curve x->(s(x),t(x)) in the domain
         //lift under isometry to hopf torus

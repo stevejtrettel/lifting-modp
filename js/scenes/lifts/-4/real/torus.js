@@ -49,19 +49,19 @@ scene.add(surf);
 //for fiber at zero
 let real1 = function(t){
     //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([0,1]);
+    let dir = torus.fromTauCoords([1,0]);
     return dir.multiplyScalar(t);
 }
-scene.add(torus.getLift(real1,colors.blue,0.02,false));
+scene.add(torus.getLift(real1,colors.red,0.04,false,true));
 
 //for fiber at halfway
 let real2 = function(t){
     //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([0,1]);
+    let dir = torus.fromTauCoords([1,0]);
     dir.multiplyScalar(t);
-    return dir.add(torus.fromTauCoords([0.5,0]));
+    return dir.add(torus.fromTauCoords([0.,0.5]));
 }
-scene.add(torus.getLift(real2,colors.red,0.04,false));
+scene.add(torus.getLift(real2,colors.red,0.04,false,true));
 
 
 
