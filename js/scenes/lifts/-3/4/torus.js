@@ -22,24 +22,15 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-
+import {colors,greenShades} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
 
-import data1 from "/data/-3/1"
-import data2 from "/data/-3/2"
 import data4 from "/data/-3/4"
 
 
 // init scene and objects, and lights
 //--------------------------------------------
-
-
-const glassColor =0xc9eaff;
-const redColor = 0xd43b3b;//0xe03d24
-const greenColor = 0x4fbf45;
-const blueColor = 0x4287f5;
-const yellowColor = 0xffd738;
 
 
 const scene = new Scene();
@@ -50,60 +41,20 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff,true);
+let surf = torus.getSurface();
 scene.add(surf);
 
 
-
-
-
-
-
-//drawing points over finite field:
-// let points1 = new Group();
-// scene.add(points1);
-// for(let i=0; i<data1.length;i++){
-//     let pt = torus.fromTauCoords(data1[i]);
-//     points1.add(torus.getPoint(pt,0.075,0x115708));
-// }
-
-
-// let points2 = new Group();
-// scene.add(points2);
-// for(let i=0; i<data2.length;i++){
-//     let pt = torus.fromTauCoords(data2[i]);
-//     points2.add(torus.getPoint(pt,0.05,redColor));
-// }
-//398c31
 
 let points4 = new Group();
 scene.add(points4);
 for(let i=0; i<data4.length;i++){
     let pt = torus.fromTauCoords(data4[i]);
-    points4.add(torus.getPoint(pt,0x43a33b,0.025));
+    points4.add(torus.getPoint(pt,greenShades.medium,0.025));
 }
 
 
 
-
-
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
 
 
 

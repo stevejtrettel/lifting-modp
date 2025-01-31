@@ -22,10 +22,10 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
+import {colors,greenShades} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
-import data from "/data/-3/1"
+import data from "/data/-3/3"
 
 
 // init scene and objects, and lights
@@ -39,7 +39,7 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff,true);
+let surf = torus.getSurface();
 scene.add(surf);
 
 
@@ -48,7 +48,7 @@ let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,0x23701b,0.05));
+    points.add(torus.getPoint(pt,greenShades.medium,0.04));
 }
 
 
