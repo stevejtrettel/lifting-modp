@@ -27,7 +27,7 @@ import {colors} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-11/tau";
 
-import data from "/data/-11/1"
+import data from "/data/-11/5"
 
 
 // init scene and objects, and lights
@@ -41,18 +41,18 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff,true);
+let surf = torus.getSurface();
 scene.add(surf);
-
+// surf.rotateY(Math.PI/2);
 
 //drawing points over finite field:
 let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,colors.purple,0.1));
+    points.add(torus.getPoint(pt,colors.purple,0.02));
 }
-
+// points.rotateY(Math.PI/2);
 
 
 

@@ -10,8 +10,14 @@ let toroidalCoords = function(a,b,c){
     return new Vector4(x,z,-y,w);
 }
 
+// //ORIG STEREO
+// let stereoProj = function(pt){
+//     return new Vector3(pt.x,pt.y,pt.w).divideScalar(1.-pt.z);
+// }
+
+//alt axix
 let stereoProj = function(pt){
-    return new Vector3(pt.x,pt.y,pt.z).divideScalar(1.-pt.w);
+    return new Vector3(pt.y,-pt.x,pt.w).divideScalar(1.-pt.z);
 }
 
 let sphCoords = function(angles){
@@ -27,17 +33,6 @@ let sphCoords = function(angles){
 
 
 
-let sphLength = function(curve, start, end){
-    //length of curve(t) between t=start and t=end
-}
-
-let sphLengthInverse = function(curve, value){
-    //finds the t such that the length on [0,t] is equal to value
-}
-
-let sphArea = function(curve){
-
-}
 
 
 let makeMaterial = function(color=glassColor, glass=false){
@@ -107,9 +102,6 @@ export{
     stereoProj,
     toroidalCoords,
     sphCoords,
-    sphLength,
-    sphArea,
-    sphLengthInverse,
     makeMaterial,
     colors,
     redShades,
