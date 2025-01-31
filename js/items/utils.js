@@ -21,18 +21,7 @@ let stereoProj = function(pt){
 }
 
 
-//orthogonal Projection from 4D to 3D
-let orthogProject = function(pt){
-    let e1 = new Vector4(1,0,0,0);
-    let e2 = new Vector4(0,1,0,0);
-    let e3 = new Vector4(0,0,1,0);
 
-    let x = pt.dot(e1)/e1.dot(e1);
-    let y = pt.dot(e2)/e2.dot(e2);
-    let z = pt.dot(e3)/e3.dot(e3);
-
-    return new Vector3(x,y,z);
-}
 
 let sphCoords = function(angles){
     let phi = angles.phi;
@@ -111,9 +100,7 @@ let purpleShades = {
 }
 
 
-
 export{
-    orthogProject,
     stereoProj,
     toroidalCoords,
     sphCoords,

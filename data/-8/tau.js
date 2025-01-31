@@ -22,7 +22,7 @@ let coordCurve = function(t){
     const a = Math.acos(2*Math.sqrt(2)/3);
 
     return {
-        phi: Math.PI/2 + a,
+        phi: Math.PI/2 - a,
         //this makes skinnier torus in projection. + a is OK too
         theta: t
     };
