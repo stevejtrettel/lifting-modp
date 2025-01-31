@@ -15,13 +15,13 @@ let coordCurve = function(t){
     // let b = 2.67;
     // let n = 6;
 
-    let a =0.276;
-    let b =1.9;
-    let n = 3;
+    // let a =0.276;
+    // let b =1.9;
+    // let n = 3;
 
-    // let a =0.42;
-    // let b = 2.6;
-    // let n = 2;
+    let a =0.42;
+    let b = 2.6;
+    let n = 2;
 
     // let a =0.028;
     // let b = 3.46;
