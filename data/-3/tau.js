@@ -1,7 +1,7 @@
 import {Vector2} from "three";
 
 //the hexagonal torus
-const tau = new Vector2(1/2, Math.sqrt(3)/2);
+const tau = new Vector2(-1/2, Math.sqrt(3)/2);
 
 //these come directly from tau
 let curveArea = 4*Math.PI*tau.x;

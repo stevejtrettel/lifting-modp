@@ -30,7 +30,7 @@ class HopfTorus{
         this.tau = latticeData.tau;
         this.fromTauCoords = latticeData.fromTauCoords;
 
-        this.res = 256;
+        this.res = 512;
 
         //auxiliary functions for building the actual isometry
         let fudgeFactor = function(t){
@@ -195,7 +195,6 @@ class HopfTorus{
             let r = radius*(1+pt.lengthSq());
             radiusValues.push(new Vector3(r,r,r));
         }
-        console.log(curvePts);
         let curve  = new CatmullRomCurve3(curvePts);
         let radii = new CatmullRomCurve3(radiusValues);
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
@@ -212,6 +211,15 @@ class HopfTorus{
             return origin.clone().add(dir.clone().multiplyScalar(s));
         }
         return this.getLift(fiberCurve,color, radius, glass);
+    }
+
+    getOppEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
+        let dir = new Vector2(-this.area/2,this.length/2);
+        let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
+        let edgeCurve = function(t){
+            return origin.clone().add(dir.clone().multiplyScalar(t));
+        }
+        return this.getLift(edgeCurve,color, radius, glass);
     }
 
     getEdgeAt(x, color=colors.blue, radius=0.025, glass=false){

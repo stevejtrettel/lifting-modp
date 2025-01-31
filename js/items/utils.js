@@ -20,6 +20,20 @@ let stereoProj = function(pt){
     return new Vector3(pt.y,-pt.x,pt.w).divideScalar(1.-pt.z);
 }
 
+
+//orthogonal Projection from 4D to 3D
+let orthogProject = function(pt){
+    let e1 = new Vector4(1,0,0,0);
+    let e2 = new Vector4(0,1,0,0);
+    let e3 = new Vector4(0,0,1,0);
+
+    let x = pt.dot(e1)/e1.dot(e1);
+    let y = pt.dot(e2)/e2.dot(e2);
+    let z = pt.dot(e3)/e3.dot(e3);
+
+    return new Vector3(x,y,z);
+}
+
 let sphCoords = function(angles){
     let phi = angles.phi;
     let theta = angles.theta;
@@ -45,7 +59,7 @@ let makeMaterial = function(color=glassColor, glass=false){
     if(glass){
         props.transparent=true;
         props.opacity=1;
-        props.transmission=0.5;
+        props.transmission=0.7;
         props.ior=1.05;
         props.thickness=0.2;
     }
@@ -99,6 +113,7 @@ let purpleShades = {
 
 
 export{
+    orthogProject,
     stereoProj,
     toroidalCoords,
     sphCoords,
