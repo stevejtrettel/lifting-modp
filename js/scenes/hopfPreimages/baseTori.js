@@ -2,14 +2,12 @@ import {
     WebGLRenderer,
     ACESFilmicToneMapping,
     PerspectiveCamera,
-    Color,
     Scene,
     Mesh,
     MeshPhysicalMaterial,
-    Vector2,
-    BoxGeometry, TorusKnotGeometry,
-    TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,FloatType,
+    BoxGeometry,
+    Vector3,
+    Group,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,78 +20,70 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
-import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
+import FD from "../../items/FD";
+import HopfPreimage from "../../items/HopfPreimage";
+import {colors} from "../../items/utils";
+
+import {coordCurve as coordCurve3 } from "../../../data/-3/tau";
+import {coordCurve as coordCurve4 } from "../../../data/-4/tau";
+import {coordCurve as coordCurve7 } from "../../../data/-7/tau";
+import {coordCurve as coordCurve8 } from "../../../data/-8/tau";
+import {coordCurve as coordCurve11 } from "../../../data/-11/tau";
+
+
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
-
 const scene = new Scene();
 
 
-// the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
-
-
-//drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff,true);
-scene.add(surf);
-
-
-//draw the two circles that are the real points:
-
-//for fiber at zero
-let real1 = function(t){
-    //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([1,0]);
-    return dir.multiplyScalar(t);
+let makeTorus = function(curve,color,scale,xoffset){
+    let grp = new Group();
+    let hopf = new HopfPreimage(curve);
+    let torus = hopf.getPreimageCurve(color);
+    torus.rotateX(Math.PI/2);
+    torus.scale.set(scale,scale,scale);
+    torus.position.set(0,1.25,0);
+    grp.add(torus);
+    let base = hopf.getCurveOnBase(color);
+    grp.add(base);
+    grp.position.set(xoffset,0,0);
+    return grp;
 }
-scene.add(torus.getLift(real1,colors.red,0.04,false,true));
-
-//for fiber at halfway
-let real2 = function(t){
-    //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([1,0]);
-    dir.multiplyScalar(t);
-    return dir.add(torus.fromTauCoords([0.,0.5]));
-}
-scene.add(torus.getLift(real2,colors.red,0.04,false,true));
 
 
+let disc4 = makeTorus(coordCurve4,colors.red,0.27,3);
+scene.add(disc4);
+
+let disc8 = makeTorus(coordCurve8,colors.yellow,0.34,1.5);
+scene.add(disc8);
+
+let disc3 = makeTorus(coordCurve3,colors.green,0.2,0.);
+scene.add(disc3);
+
+let disc7 = makeTorus(coordCurve7,colors.blue,0.2,-1.5);
+scene.add(disc7);
+
+let disc11 = makeTorus(coordCurve11,colors.purple,0.2,-3);
+scene.add(disc11);
 
 
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
+
+
+
 
 
 
 // spot light
 let spotLight = new PhysicalSpotLight( 0xffffff );
-spotLight.position.set( 2, 6.0, 0 );
+spotLight.position.set( 2, 6.0, -2 );
 spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 5.0;
+spotLight.intensity = 2.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -109,7 +99,7 @@ scene.add( spotLight );
 const targetObject = spotLight.target;
 targetObject.position.x = 1;
 targetObject.position.y = 0;
-targetObject.position.z = 0.05;
+targetObject.position.z = 1.05;
 scene.add( targetObject );
 
 
@@ -126,16 +116,16 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(0.,-1,0);
 scene.add(ground);
 
-// const backWall = new Mesh(
-//     new BoxGeometry( 100, 100, 0.1 ),
-//     new MeshPhysicalMaterial({
-//     }),
-// );
-// backWall.position.set(0,4,31);
-// scene.add(backWall);
+const backWall = new Mesh(
+    new BoxGeometry( 100, 100, 0.1 ),
+    new MeshPhysicalMaterial({
+    }),
+);
+backWall.position.set(0,0,5);
+scene.add(backWall);
 
 
 // environment for the scene
@@ -149,10 +139,12 @@ scene.environment = texture;
 scene.background = texture;
 
 
+
+
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0,2,-10 );
 camera.lookAt( 0, 0, 0 );
 
 

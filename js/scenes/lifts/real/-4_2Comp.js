@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,137 +22,82 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import FD from "../../items/FD";
-import HopfPreimage from "../../items/HopfPreimage";
-import {colors} from "../../items/utils";
-
-import {coordCurve as coordCurve3 } from "../../../data/-3/tau";
-import {coordCurve as coordCurve4 } from "../../../data/-4/tau";
-import {coordCurve as coordCurve7 } from "../../../data/-7/tau";
-import {coordCurve as coordCurve8 } from "../../../data/-8/tau";
-import {coordCurve as coordCurve11 } from "../../../data/-11/tau";
-
-
+import {colors} from "../../../items/utils";
+import HopfTorus from "../../../items/HopfTorus";
+import {coordCurve,latticeData} from "/data/-4/tau";
+import data from "/data/-4/1"
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
+
 const scene = new Scene();
 
-const tau4 = new Vector3(0,1);
-const tau8 = new Vector3(0, Math.sqrt(2));
-const tau3 = new Vector3(-1, Math.sqrt(3)).divideScalar(2);
-const tau7 = new Vector3(-1, Math.sqrt(7)).divideScalar(2);
-const tau11 = new Vector3(-1, Math.sqrt(11)).divideScalar(2);
+
+// the computer for dealing with the hopf torus
+let torus = new HopfTorus(coordCurve,latticeData);
 
 
-
-let fd4 = new FD(tau4);
-let g4 = new Group();
-scene.add(g4);
-g4.add(fd4.getParallelogram(colors.red));
-let grid4 = fd4.getGridlines(5,colors.red,0.01,false);
-grid4.position.set(0,0.01,0);
-g4.add(grid4);
-g4.position.set(3,0,0);
-
-let fd8 = new FD(tau8,1/Math.pow(2,0.25));
-let g8 = new Group();
-scene.add(g8);
-g8.add(fd8.getParallelogram(colors.yellow));
-let grid8 = fd8.getGridlines(5,colors.yellow,0.01,false);
-grid8.position.set(0,0.01,0);
-g8.add(grid8);
-g8.position.set(1.5,0,0);
+//drawing the torus surface in R3
+let surf = torus.getSurface(colors.glass,true);
+scene.add(surf);
 
 
-let fd3 = new FD(tau3,1.1);
-let g3 = new Group();
-scene.add(g3);
-g3.add(fd3.getParallelogram(colors.green));
-let grid3 = fd3.getGridlines(5,colors.green,0.01,false);
-grid3.position.set(0,0.01,0);
-g3.add(grid3);
+//draw the two circles that are the real points:
 
+//for fiber at zero
+let real1 = function(t){
+    //get new initial direction: in unit square is 0.3, 0.1
+    let dir = torus.fromTauCoords([1,0]);
+    dir.multiplyScalar(t);
+    return dir.add(torus.fromTauCoords([0.,0.86]));
+}
+scene.add(torus.getLift(real1,colors.orange,0.04,false,true));
 
+//for fiber at halfway
+let real2 = function(t){
+    //get new initial direction: in unit square is 0.3, 0.1
+    let dir = torus.fromTauCoords([1,0]);
+    dir.multiplyScalar(t);
+    return dir.add(torus.fromTauCoords([0.,0.36]));
+}
+scene.add(torus.getLift(real2,colors.orange,0.04,false,true));
 
-let fd7 = new FD(tau7,0.9);
-let g7 = new Group();
-scene.add(g7);
-g7.add(fd7.getParallelogram(colors.blue));
-let grid7 = fd7.getGridlines(5,colors.blue,0.01,false);
-grid7.position.set(0,0.01,0);
-g7.add(grid7);
-g7.position.set(-1.5,0,0);
-
-
-let fd11 = new FD(tau11,0.77);
-let g11 = new Group();
-scene.add(g11);
-g11.add(fd11.getParallelogram(colors.purple));
-let grid11 = fd11.getGridlines(5,colors.purple,0.01,false);
-grid11.position.set(0,0.01,0);
-g11.add(grid11);
-g11.position.set(-3,0,0);
+//add in the marked point
+scene.add(torus.getPoint(new Vector2(4,0),0x000000,0.08));
 
 
 
 
-
-//ADD THE TORI!!!
-
-
-let hopf4 = new HopfPreimage(coordCurve4);
-let torus4 = hopf4.getPreimageCurve(0.27,colors.red);
-torus4.position.set(0.6,0,2);
-g4.add(torus4);
-
-
-let hopf8 = new HopfPreimage(coordCurve8);
-let torus8 = hopf8.getPreimageCurve(0.34,colors.yellow);
-torus8.position.set(0.5,0,2);
-g8.add(torus8);
-
-
-
-let hopf3 = new HopfPreimage(coordCurve3);
-let torus3 = hopf3.getPreimageCurve(0.2,colors.green);
-torus3.position.set(0.25,0,2);
-g3.add(torus3);
-
-
-
-
-let hopf7 = new HopfPreimage(coordCurve7);
-let torus7 = hopf7.getPreimageCurve(0.2,colors.blue);
-torus7.position.set(0,0,2);
-g7.add(torus7);
-
-
-
-let hopf11 = new HopfPreimage(coordCurve11);
-let torus11 = hopf11.getPreimageCurve(0.2,colors.purple);
-torus11.position.set(0,0,2);
-g11.add(torus11);
-
-
-
-
-
-
-
+//
+// // area light for the scene:
+// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
+// areaLight.position.x = 1.5;
+// areaLight.position.y = 1.0;
+// areaLight.position.z = - 0.5;
+// areaLight.rotateZ( - Math.PI / 4 );
+// areaLight.rotateX( - Math.PI / 2 );
+// areaLight.isCircular = false;
+// scene.add( areaLight );
+//
+// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
+// redLight.position.y = 1.25;
+// redLight.position.z = - 3.5;
+// redLight.rotateX( Math.PI );
+// redLight.isCircular = false;
+// scene.add( redLight );
 
 
 
 // spot light
 let spotLight = new PhysicalSpotLight( 0xffffff );
-spotLight.position.set( 2, 6.0, -2 );
+spotLight.position.set( 2, 6.0, 0 );
 spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 2.0;
+spotLight.intensity = 5.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -168,7 +113,7 @@ scene.add( spotLight );
 const targetObject = spotLight.target;
 targetObject.position.x = 1;
 targetObject.position.y = 0;
-targetObject.position.z = 1.05;
+targetObject.position.z = 0.05;
 scene.add( targetObject );
 
 
@@ -185,16 +130,16 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(0.,-1,0);
+ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,0,5);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
@@ -208,12 +153,10 @@ scene.environment = texture;
 scene.background = texture;
 
 
-
-
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0, 7, -0.1 );
+camera.position.set( 1, 2.2, - 5 );
 camera.lookAt( 0, 0, 0 );
 
 

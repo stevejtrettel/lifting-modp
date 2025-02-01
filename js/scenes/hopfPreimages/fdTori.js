@@ -46,56 +46,103 @@ const tau11 = new Vector3(-1, Math.sqrt(11)).divideScalar(2);
 
 
 
-// Make Tori
+let fd4 = new FD(tau4);
+let g4 = new Group();
+scene.add(g4);
+g4.add(fd4.getParallelogram(colors.red));
+let grid4 = fd4.getGridlines(5,colors.red,0.01,false);
+grid4.position.set(0,0.01,0);
+g4.add(grid4);
+g4.position.set(3,0,0);
 
-let makeTorus = function(curve,color,scale,xoffset){
-    let grp = new Group();
-    let hopf = new HopfPreimage(curve);
-    let torus = hopf.getPreimageCurve(color);
-    torus.rotateX(Math.PI/2);
-    torus.scale.set(scale,scale,scale);
-    torus.position.set(0,1.25,0);
-    grp.add(torus);
-    let base = hopf.getCurveOnBase(color);
-    grp.add(base);
-    grp.position.set(xoffset,0,0);
-    return grp;
-}
-
-
-// Make fundamental domains
-
-let makeFD = function(tau, color, xoffset){
-    let grp = new Group();
-    let fd = new FD(tau);
-    grp.add(fd.getParallelogram(color,false));
-    let grid = fd.getGridlines(5,color,0.01,false);
-    grid.position.set(0,0.01,0);
-    grp.add(grid);
-    grp.position.set(xoffset,-0.75,-0.5);
-    return grp;
-}
+let fd8 = new FD(tau8,1/Math.pow(2,0.25));
+let g8 = new Group();
+scene.add(g8);
+g8.add(fd8.getParallelogram(colors.yellow));
+let grid8 = fd8.getGridlines(5,colors.yellow,0.01,false);
+grid8.position.set(0,0.01,0);
+g8.add(grid8);
+g8.position.set(1.5,0,0);
 
 
-let disc4 = makeTorus(coordCurve4,colors.red,0.27,3);
-disc4.add(makeFD(tau4,colors.red,-0.35));
-scene.add(disc4);
+let fd3 = new FD(tau3,1.1);
+let g3 = new Group();
+scene.add(g3);
+g3.add(fd3.getParallelogram(colors.green));
+let grid3 = fd3.getGridlines(5,colors.green,0.01,false);
+grid3.position.set(0,0.01,0);
+g3.add(grid3);
 
-let disc8 = makeTorus(coordCurve8,colors.yellow,0.34,1.5);
-disc8.add(makeFD(tau8,colors.yellow,-0.25));
-scene.add(disc8);
 
-let disc3 = makeTorus(coordCurve3,colors.green,0.2,0.);
-disc3.add(makeFD(tau3,colors.green,0));
-scene.add(disc3);
 
-let disc7 = makeTorus(coordCurve7,colors.blue,0.2,-1.5);
-disc7.add(makeFD(tau7,colors.blue,-0.15));
-scene.add(disc7);
+let fd7 = new FD(tau7,0.9);
+let g7 = new Group();
+scene.add(g7);
+g7.add(fd7.getParallelogram(colors.blue));
+let grid7 = fd7.getGridlines(5,colors.blue,0.01,false);
+grid7.position.set(0,0.01,0);
+g7.add(grid7);
+g7.position.set(-1.5,0,0);
 
-let disc11 = makeTorus(coordCurve11,colors.purple,0.2,-3);
-disc11.add(makeFD(tau11,colors.purple,-0.4));
-scene.add(disc11);
+
+let fd11 = new FD(tau11,0.77);
+let g11 = new Group();
+scene.add(g11);
+g11.add(fd11.getParallelogram(colors.purple));
+let grid11 = fd11.getGridlines(5,colors.purple,0.01,false);
+grid11.position.set(0,0.01,0);
+g11.add(grid11);
+g11.position.set(-3,0,0);
+
+
+
+
+
+//ADD THE TORI!!!
+
+
+let hopf4 = new HopfPreimage(coordCurve4);
+let torus4 = hopf4.getPreimageCurve(colors.red);
+torus4.scale.set(0.27,0.27,0.27);
+torus4.position.set(0.6,0,2);
+g4.add(torus4);
+
+
+let hopf8 = new HopfPreimage(coordCurve8);
+let torus8 = hopf8.getPreimageCurve(colors.yellow);
+torus8.scale.set(0.34,0.34,0.34);
+torus8.position.set(0.5,0,2);
+g8.add(torus8);
+
+
+
+let hopf3 = new HopfPreimage(coordCurve3);
+let torus3 = hopf3.getPreimageCurve(colors.green);
+torus3.scale.set(0.2,0.2,0.2);
+torus3.position.set(0.25,0,2);
+g3.add(torus3);
+
+
+
+
+let hopf7 = new HopfPreimage(coordCurve7);
+let torus7 = hopf7.getPreimageCurve(colors.blue);
+torus7.scale.set(0.2,0.2,0.2);
+torus7.position.set(0,0,2);
+g7.add(torus7);
+
+
+
+let hopf11 = new HopfPreimage(coordCurve11);
+let torus11 = hopf11.getPreimageCurve(colors.purple);
+torus11.scale.set(0.2,0.2,0.2);
+torus11.position.set(0,0,2);
+g11.add(torus11);
+
+
+
+
+
 
 
 
@@ -169,7 +216,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0,2,-10 );
+camera.position.set( 0, 7, -0.1 );
 camera.lookAt( 0, 0, 0 );
 
 
