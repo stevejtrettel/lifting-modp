@@ -27,7 +27,7 @@ import HopfTorus from "../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
 
 import data4 from "/data/-3/4"
-
+import data1 from "/data/-3/1"
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -45,7 +45,7 @@ let torus = new HopfTorus(coordCurve,latticeData);
 // scene.add(surf);
 
 
-
+//
 let points4 = new Group();
 scene.add(points4);
 for(let i=0; i<data4.length;i++){
@@ -54,7 +54,9 @@ for(let i=0; i<data4.length;i++){
 }
 
 
-
+//add in the marked point!
+ let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
+scene.add(torus.getPoint(pt,0x1f9903,0.035));
 
 
 
