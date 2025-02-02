@@ -79,6 +79,7 @@ let redShades = {
 
 let yellowShades = {
     medium : 0xe8ac2a,
+    dark:0xcc8d04,
 }
 
 
@@ -109,5 +110,6 @@ export{
     redShades,
     blueShades,
     greenShades,
+    yellowShades,
 }
 
