@@ -26,8 +26,8 @@ import {colors,greenShades} from "../../../items/utils";
 import HopfTorus from "../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
 
-import data4 from "/data/-3/4"
-import data1 from "/data/-3/1"
+import data from "/data/-3/5"
+
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -46,18 +46,18 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //
-let points4 = new Group();
-scene.add(points4);
-for(let i=0; i<data4.length;i++){
-    let pt = torus.fromTauCoords(data4[i]);
-    points4.add(torus.getPoint(pt,colors.glass,0.033,true));
+let points = new Group();
+scene.add(points);
+for(let i=0; i<data.length;i++){
+    let pt = torus.fromTauCoords(data[i]);
+    points.add(torus.getPoint(pt,0x2D728F,0.013,false));
 }
 //0.33
 //0x2D728F
 
 //add in the marked point!
  let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
-scene.add(torus.getPoint(pt,0x1f9903,0.035));
+scene.add(torus.getPoint(pt,0x1f9903,0.014));
 
 
 
