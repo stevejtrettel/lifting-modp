@@ -48,9 +48,9 @@ let makeMaterial = function(color=glassColor, glass=false){
     if(glass){
         props.transparent=true;
         props.opacity=1;
-        props.transmission=0.5;
-        props.ior=1.05;
-        props.thickness=0.2;
+        props.transmission=0.95;
+        props.ior=1.5;
+        props.thickness=0.1;
     }
     return new MeshPhysicalMaterial(props);
 }

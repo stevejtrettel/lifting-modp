@@ -50,9 +50,10 @@ let points4 = new Group();
 scene.add(points4);
 for(let i=0; i<data4.length;i++){
     let pt = torus.fromTauCoords(data4[i]);
-    points4.add(torus.getPoint(pt,0x2D728F,0.033));
+    points4.add(torus.getPoint(pt,0x3549de,0.03,true));
 }
-
+//0.33
+//0x2D728F
 
 //add in the marked point!
  let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
@@ -157,7 +158,7 @@ pathTracer.setScene( scene, camera );
 
 pathTracer.renderScale = Math.max( 1 / window.devicePixelRatio, 0.5 );;
 pathTracer.tiles.setScalar( 3 );
-pathTracer.bounces = 30.;
+pathTracer.bounces = 100.;
 
 
 
