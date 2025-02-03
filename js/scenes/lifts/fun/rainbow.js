@@ -50,11 +50,16 @@ let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    let sph = torus.getPoint(pt,0xffffff,0.033,false);
+    let sph = torus.getPoint(pt,0xffffff,0.035,false);
     //max height is sqrt(3)/2=0.866
-    //let ang = data[i][1]/0.866;
-    //sph.material.color.setHSL(ang,0.5,0.2);
+    // let ang = data[i][1]/0.866;
+    // ang += 0.1*Math.random();
+    // let light = 0.1 + 0.15*Math.random();
+    // sph.material.color.setHSL(ang,0.5,light);
 
+    sph.rotateX(Math.random());
+    sph.rotateY(Math.random());
+    sph.rotateZ(Math.random());
 
     let hue = 0.57+0.05*Math.random();
     let light = 0.17*0.1*Math.random();
@@ -68,7 +73,7 @@ for(let i=0; i<data.length;i++){
 
 //add in the marked point!
  let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
-scene.add(torus.getPoint(pt,0x1f9903,0.034));
+scene.add(torus.getPoint(pt,0x1f9903,0.043));
 
 
 
