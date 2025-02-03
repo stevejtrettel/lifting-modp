@@ -246,8 +246,8 @@ class HopfTorus{
     getPoint(pt,  color=colors.red, radius=0.05, glass=false){
         let q = this.isometricImage(pt);
         let rescale = 1+q.lengthSq();
-       // let geom = new BoxGeometry(radius*rescale, radius*rescale, radius*rescale);
-        let geom = new DodecahedronGeometry(radius*rescale);
+        //let geom = new BoxGeometry(radius*rescale, radius*rescale, radius*rescale);
+        let geom = new DodecahedronGeometry(radius*rescale,0);
        // let geom = new SphereGeometry(radius*rescale);
         let mat = makeMaterial(color,glass);
         let mesh = new Mesh(geom, mat);
