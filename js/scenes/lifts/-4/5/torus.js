@@ -53,7 +53,7 @@ scene.add(points);
 
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,redShades.light,0.015));
+    points.add(torus.getPoint(pt,redShades.medium,0.015));
 }
 
 
