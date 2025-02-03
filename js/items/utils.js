@@ -1,4 +1,4 @@
-import {DoubleSide, MeshPhysicalMaterial, Vector3, Vector4} from "three";
+import {DoubleSide, MeshPhysicalMaterial, Vector3, Vector4 ,Color} from "three";
 
 
 let toroidalCoords = function(a,b,c){
@@ -37,19 +37,18 @@ let sphCoords = function(angles){
 
 
 
-
 let makeMaterial = function(color=glassColor, glass=false){
     let props = {
         color:color,
         clearcoat:1,
-        roughness:0.1,
+        roughness:0.5,
         metalness:0,
     }
     if(glass){
         props.transparent=true;
         props.opacity=1;
         props.transmission=0.95;
-        props.ior=1.75;
+        props.ior=1.5;
         props.thickness=0.5;
     }
     return new MeshPhysicalMaterial(props);
@@ -101,6 +100,16 @@ let purpleShades = {
 }
 
 
+let getPastelColor = function(x){
+    //x is in [0,1]
+    let hue = x;
+    let sat = 0.5;
+    let light = 0.1;
+    return new Color().setHSL(hue,sat,light);
+}
+
+
+
 export{
     stereoProj,
     toroidalCoords,
@@ -111,5 +120,6 @@ export{
     blueShades,
     greenShades,
     yellowShades,
+    getPastelColor,
 }
 

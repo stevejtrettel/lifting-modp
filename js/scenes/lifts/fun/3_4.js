@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,FloatType,
+    Vector3, Group, SphereGeometry, FloatType, TextureLoader,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,11 +22,11 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors,greenShades} from "../../../items/utils";
+import {colors, getPastelColor, greenShades} from "../../../items/utils";
 import HopfTorus from "../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
 
-import data from "/data/-3/5"
+import data from "/data/-3/4"
 
 
 // init scene and objects, and lights
@@ -45,12 +45,14 @@ let torus = new HopfTorus(coordCurve,latticeData);
 // scene.add(surf);
 
 
+console.log(getPastelColor(0.5));
 //
 let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt,0x2D728F,0.013,false));
+    let sph = torus.getPoint(pt,0x2D728F,0.033,false);
+    points.add(sph);
 }
 //0.33
 //0x2D728F
@@ -86,7 +88,6 @@ targetObject.position.x = 1;
 targetObject.position.y = 0;
 targetObject.position.z = 0.05;
 scene.add( targetObject );
-
 
 
 
@@ -183,9 +184,10 @@ function saveImage(canvas){
 const gui = new GUI().close();
 let params = {
     saveit: ()=>saveImage(renderer.domElement),
+    rebuild: ()=>pathTracer.setScene( scene, camera ),
 };
 gui.add( params, 'saveit' );
-
+gui.add(params, 'rebuild');
 
 
 //controls
