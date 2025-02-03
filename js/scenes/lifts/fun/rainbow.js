@@ -26,7 +26,7 @@ import {colors, getPastelColor, greenShades} from "../../../items/utils";
 import HopfTorus from "../../../items/HopfTorus";
 import {coordCurve,latticeData} from "/data/-3/tau";
 
-import data from "/data/-3/4"
+import data from "/data/-3/5"
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -50,7 +50,7 @@ let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    let sph = torus.getPoint(pt,0xffffff,0.033,true);
+    let sph = torus.getPoint(pt,0xffffff,0.013,false);
     //max height is sqrt(3)/2=0.866
     let ang = data[i][1]/0.866;
     sph.material.color.setHSL(ang,0.5,0.2);
@@ -62,9 +62,9 @@ for(let i=0; i<data.length;i++){
 
 
 //add in the marked point!
- let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
-scene.add(torus.getPoint(pt,0x1f9903,0.014));
-
+//  let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
+// scene.add(torus.getPoint(pt,0x1f9903,0.014));
+//
 
 
 // spot light
