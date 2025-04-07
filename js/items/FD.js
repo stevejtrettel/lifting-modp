@@ -17,7 +17,11 @@ import{makeMaterial,colors} from "./utils";
 
 class FD{
     constructor(tau,width=1) {
-        this.width = width;
+
+        //fix the area of the domain, instead of the width
+        let area = width * tau.y;
+
+        this.width = width / Math.sqrt(area);
         this.tau = tau.multiplyScalar(this.width);
     }
 
@@ -26,7 +30,7 @@ class FD{
         geometry.scale(this.width,this.tau.y,1);
         geometry.translate(this.width/2,this.tau.y/2,0.05);
         const matrix = new Matrix4();
-        matrix.makeShear(0, 0, this.tau.x/this.tau.y, 0, 0,0);
+        matrix.makeShear(0, 0, -this.tau.x/this.tau.y, 0, 0,0);
         geometry.applyMatrix4(matrix);
         let mesh = new Mesh(geometry, makeMaterial(color,glass));
         mesh.rotateX(Math.PI/2);
@@ -66,7 +70,7 @@ class FD{
     }
 
     getHorizontalAt(x,color=colors.blue,radius=0.025,glass=false){
-        let start = new Vector3(this.tau.x, 0, this.tau.y).multiplyScalar(x);
+        let start = new Vector3(-this.tau.x, 0, this.tau.y).multiplyScalar(x);
         let end = start.clone().add(new Vector3(this.width,0,0));
         let line = new LineCurve3(start,end);
         let geom = new TubeGeometry(line,64,radius);
@@ -75,7 +79,7 @@ class FD{
 
     getVerticalAt(x,color=colors.blue,radius=0.025,glass=false){
         let start = new Vector3(this.width,0,0).multiplyScalar(x);
-        let end =  start.clone().add(new Vector3(this.tau.x,0,this.tau.y));
+        let end =  start.clone().add(new Vector3(-this.tau.x,0,this.tau.y));
         let line = new LineCurve3(start,end);
         let geom = new TubeGeometry(line,64,radius);
         return new Mesh(geom, makeMaterial(color,glass));

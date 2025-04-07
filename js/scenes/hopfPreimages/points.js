@@ -43,33 +43,33 @@ let hopf = new HopfPreimage();
 
 base.add(hopf.getBase());
 
-let pt1 = {theta:0,phi:0.6*Math.PI};
+let pt1 = {theta:0,phi:0.2*Math.PI};
 base.add(hopf.getBasePoint(pt1,colors.red));
 fibers.add(hopf.getPreimagePoint(pt1,colors.red));
 
 
-let pt2 = {theta:0,phi:Math.PI};
+let pt2 = {theta:0,phi:0.1*Math.PI};
 base.add(hopf.getBasePoint(pt2,colors.yellow));
 fibers.add(hopf.getPreimagePoint(pt2,colors.yellow));
 
-let pt3 = {theta:1.,phi:0.75*Math.PI};
+let pt3 = {theta:1.,phi:0.3*Math.PI};
 base.add(hopf.getBasePoint(pt3,colors.green));
 fibers.add(hopf.getPreimagePoint(pt3,colors.green));
 
-let pt4 = {theta:4.,phi:0.6*Math.PI};
+let pt4 = {theta:4.,phi:0.4*Math.PI};
 base.add(hopf.getBasePoint(pt4,colors.blue));
 fibers.add(hopf.getPreimagePoint(pt4,colors.blue));
 
-let pt5 = {theta:2.,phi:0.8*Math.PI};
+let pt5 = {theta:2.,phi:0.35*Math.PI};
 base.add(hopf.getBasePoint(pt5,colors.purple));
 fibers.add(hopf.getPreimagePoint(pt5,colors.purple));
 
 
- base.rotateX(Math.PI);
+ //base.rotateX(Math.PI);
 
 
 fibers.scale.set(0.5,0.5,0.5);
-fibers.position.set(-2,0.,0.2);
+fibers.position.set(0,2.,1);
 fibers.rotateX(-0.5);
 
 // spot light

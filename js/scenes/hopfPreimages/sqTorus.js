@@ -24,7 +24,7 @@ import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 import {colors} from "../../items/utils";
 import HopfTorus from "../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-3/tau";
+import {coordCurve,latticeData} from "/data/-4/tau";
 
 
 // init scene and objects, and lights
@@ -44,37 +44,28 @@ scene.add(surf);
 
 
 
-
-
-
-
 let lines = new Group();
 scene.add(lines);
 
-
-
-let N =75;
+let N =50;
 //get curves on the surface:
 for(let i=0; i<N+1; i++){
-   // let horiz = torus.getFiberAt(i/N,colors.yellow,0.005,false);
-    let vert = torus.getEdgeAt(i/N,colors.blue,0.006,false);
-    let opp = torus.getOppEdgeAt(i/N,colors.green,0.006,false);
-  //  lines.add(horiz);
+    // let horiz = torus.getFiberAt(i/N,colors.yellow,0.005,false);
+    let vert = torus.getEdgeAt(i/N,colors.red,0.006,false);
+    let opp = torus.getOppEdgeAt(i/N,colors.orange,0.006,false);
+    //  lines.add(horiz);
     lines.add(vert);
     lines.add(opp);
 }
 
 
-
-
-
 // let N1 = 10;
 // //get curves on the surface:
 // for(let i=0; i<N1+1; i++){
-//     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert1 = torus.getEdgeAt(i/N1,colors.blue,0.01,false);
-//     let opp1 = torus.getOppEdgeAt(i/N1,colors.green,0.01,false);
-//     //  lines.add(horiz);
+//   //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
+//     let vert1 = torus.getEdgeAt(i/N1,colors.orange,0.01,false);
+//     let opp1 = torus.getOppEdgeAt(i/N1,colors.red,0.01,false);
+//   //  lines.add(horiz);
 //     lines.add(vert1);
 //     lines.add(opp1);
 // }
@@ -84,8 +75,8 @@ for(let i=0; i<N+1; i++){
 // //get curves on the surface:
 // for(let i=0; i<N2+1; i++){
 //     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert2 = torus.getEdgeAt(i/N2,colors.blue,0.0075,false);
-//     let opp2 = torus.getOppEdgeAt(i/N2,colors.green,0.0075,false);
+//     let vert2 = torus.getEdgeAt(i/N2,colors.orange,0.0075,false);
+//     let opp2 = torus.getOppEdgeAt(i/N2,colors.red,0.0075,false);
 //     //  lines.add(horiz);
 //     lines.add(vert2);
 //     lines.add(opp2);
@@ -96,8 +87,8 @@ for(let i=0; i<N+1; i++){
 // //get curves on the surface:
 // for(let i=0; i<N3+1; i++){
 //     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert3 = torus.getEdgeAt(i/N3,colors.blue,0.005,false);
-//     let opp3 = torus.getOppEdgeAt(i/N3,colors.green,0.005,false);
+//     let vert3 = torus.getEdgeAt(i/N3,colors.orange,0.005,false);
+//     let opp3 = torus.getOppEdgeAt(i/N3,colors.red,0.005,false);
 //     //  lines.add(horiz);
 //     lines.add(vert3);
 //     lines.add(opp3);
@@ -108,16 +99,12 @@ for(let i=0; i<N+1; i++){
 // //get curves on the surface:
 // for(let i=0; i<N4+1; i++){
 //     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert4 = torus.getEdgeAt(i/N4,colors.blue,0.0025,false);
-//     let opp4 = torus.getOppEdgeAt(i/N4,colors.green,0.0025,false);
+//     let vert4 = torus.getEdgeAt(i/N4,colors.orange,0.0025,false);
+//     let opp4 = torus.getOppEdgeAt(i/N4,colors.red,0.0025,false);
 //     //  lines.add(horiz);
 //     lines.add(vert4);
 //     lines.add(opp4);
 // }
-
-
-
-
 
 
 //

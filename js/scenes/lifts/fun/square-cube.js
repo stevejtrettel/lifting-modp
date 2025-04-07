@@ -60,7 +60,7 @@ for(let i=0; i<data.length;i++){
     let light = 0.1 + 0.15*Math.random();
     sph.material.color.setHSL(ang,0.5,light);
     sph.material.normalMap = cementNormals;
-    sph.material.normalScale= new Vector2(2,2);
+    sph.material.normalScale= new Vector2(3,3);
     sph.rotateX(Math.random());
     sph.rotateY(Math.random());
     sph.rotateZ(Math.random());

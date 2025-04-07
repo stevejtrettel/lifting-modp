@@ -1,3 +1,5 @@
+
+
 import {
     WebGLRenderer,
     ACESFilmicToneMapping,
@@ -9,8 +11,9 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,FloatType,
+    Vector3, Group, SphereGeometry, FloatType, DoubleSide, CatmullRomCurve3,
 } from "three";
+
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
@@ -22,121 +25,115 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../items/utils";
-import HopfTorus from "../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-3/tau";
+
+import ParametricGeometry from "../../items/ParametricGeometry";
+import {VarTubeGeometry} from "../../items/VarTubeGeometry";
+
+
+//a file drawing a torus of revolution, a non-conformal map.
+
+
+import {colors, makeMaterial, stereoProj, toroidalCoords} from "../../items/utils";
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
-
 const scene = new Scene();
 
 
-// the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
 
 
-//drawing the torus surface in R3
-let surf = torus.getSurface();
-scene.add(surf);
+let parameterization = function(s,t){
+    s *= 2*Math.PI;
+    t *= 2*Math.PI;
 
+    let R = 1;
+    let r = 0.65;
 
+    let x = (R+r*Math.sin(s))*Math.cos(t);
+    let y = (R+r*Math.sin(s))*Math.sin(t);
+    let z = r*Math.cos(s);
+    return new Vector3(x,z,-y);
 
-
-
-
-
-let lines = new Group();
-scene.add(lines);
-
-
-
-let N =75;
-//get curves on the surface:
-for(let i=0; i<N+1; i++){
-   // let horiz = torus.getFiberAt(i/N,colors.yellow,0.005,false);
-    let vert = torus.getEdgeAt(i/N,colors.blue,0.006,false);
-    let opp = torus.getOppEdgeAt(i/N,colors.green,0.006,false);
-  //  lines.add(horiz);
-    lines.add(vert);
-    lines.add(opp);
+}
+let torusRev = function(s,t,dest){
+    let p = parameterization(s,t);
+    dest.set(p.x,p.y,p.z);
 }
 
 
 
+let torusGeom = new ParametricGeometry(torusRev,100,100);
+let torusMat = makeMaterial(colors.glass);
+let torusMesh = new Mesh(torusGeom,torusMat);
 
-
-// let N1 = 10;
-// //get curves on the surface:
-// for(let i=0; i<N1+1; i++){
-//     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert1 = torus.getEdgeAt(i/N1,colors.blue,0.01,false);
-//     let opp1 = torus.getOppEdgeAt(i/N1,colors.green,0.01,false);
-//     //  lines.add(horiz);
-//     lines.add(vert1);
-//     lines.add(opp1);
-// }
-//
-//
-// let N2 = 2*N1;
-// //get curves on the surface:
-// for(let i=0; i<N2+1; i++){
-//     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert2 = torus.getEdgeAt(i/N2,colors.blue,0.0075,false);
-//     let opp2 = torus.getOppEdgeAt(i/N2,colors.green,0.0075,false);
-//     //  lines.add(horiz);
-//     lines.add(vert2);
-//     lines.add(opp2);
-// }
-//
-//
-// let N3 = 4*N1;
-// //get curves on the surface:
-// for(let i=0; i<N3+1; i++){
-//     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert3 = torus.getEdgeAt(i/N3,colors.blue,0.005,false);
-//     let opp3 = torus.getOppEdgeAt(i/N3,colors.green,0.005,false);
-//     //  lines.add(horiz);
-//     lines.add(vert3);
-//     lines.add(opp3);
-// }
-//
-//
-// let N4 = 8*N1;
-// //get curves on the surface:
-// for(let i=0; i<N4+1; i++){
-//     //  let horiz = torus.getFiberAt(i/N,colors.red,0.005,false);
-//     let vert4 = torus.getEdgeAt(i/N4,colors.blue,0.0025,false);
-//     let opp4 = torus.getOppEdgeAt(i/N4,colors.green,0.0025,false);
-//     //  lines.add(horiz);
-//     lines.add(vert4);
-//     lines.add(opp4);
-// }
+scene.add(torusMesh);
 
 
 
+let latMat = makeMaterial(colors.red);
+let longMat = makeMaterial(colors.orange);
 
 
 
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
+function createLatitude(x){
+    //x is between 0 and 1
+
+    //get points and radii
+    let curvePts = [];
+    let curveRadii = [];
+    for(let i=0;i<128;i++){
+        let pt = parameterization(x,i/128);
+        curvePts.push(pt);
+        let r = 0.005*(1+pt.lengthSq());
+        curveRadii.push(new Vector3(r,r,r));
+    }
+    let curve  = new CatmullRomCurve3(curvePts);
+    let radii = new CatmullRomCurve3(curveRadii);
+    let curveGeom = new VarTubeGeometry(curve, radii, 256,  16, true);
+
+    return new Mesh(curveGeom, latMat);
+}
+
+
+function createLongitude(x){
+    //x is between 0 and 1
+
+    //get points and radii
+    let curvePts = [];
+    let curveRadii = [];
+    for(let i=0;i<128;i++){
+        let pt = parameterization(i/128,x);
+        curvePts.push(pt);
+        let r = 0.005*(1+pt.lengthSq());
+        curveRadii.push(new Vector3(r,r,r));
+    }
+    let curve  = new CatmullRomCurve3(curvePts);
+    let radii = new CatmullRomCurve3(curveRadii);
+    let curveGeom = new VarTubeGeometry(curve, radii, 256,  16, true);
+
+    return new Mesh(curveGeom, longMat);
+}
+
+
+//make circles of latitude and longitude
+let N = 50;
+let latitudes = new Group();
+let longitudes = new Group();
+for(let i=0; i<N; i++){
+    let x = i/N;
+
+    latitudes.add(createLatitude(x));
+    longitudes.add(createLongitude(x));
+}
+
+scene.add(latitudes);
+scene.add(longitudes);
+
+
+
+
 
 
 
@@ -147,7 +144,7 @@ spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 5.0;
+spotLight.intensity = 2.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -180,16 +177,16 @@ const ground = new Mesh(
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(0.,-1.25,0);
 scene.add(ground);
 
-// const backWall = new Mesh(
-//     new BoxGeometry( 100, 100, 0.1 ),
-//     new MeshPhysicalMaterial({
-//     }),
-// );
-// backWall.position.set(0,4,31);
-// scene.add(backWall);
+const backWall = new Mesh(
+    new BoxGeometry( 100, 100, 0.1 ),
+    new MeshPhysicalMaterial({
+    }),
+);
+backWall.position.set(0,0,5);
+scene.add(backWall);
 
 
 // environment for the scene
@@ -206,7 +203,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0, 5, - 1 );
 camera.lookAt( 0, 0, 0 );
 
 
