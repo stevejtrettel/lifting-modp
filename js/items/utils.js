@@ -40,16 +40,16 @@ let sphCoords = function(angles){
 let makeMaterial = function(color=glassColor, glass=false){
     let props = {
         color:color,
-       // clearcoat:1,
+        //clearcoat:1,
         roughness:0.5,
         metalness:0,
     }
     if(glass){
         props.transparent=true;
         props.opacity=1;
-        props.transmission=0.5;
-        props.ior=1.02;
-        props.thickness=0.05;
+        props.transmission=0.99;
+        props.ior=1.05;
+        props.thickness=0.01;
     }
     return new MeshPhysicalMaterial(props);
 }

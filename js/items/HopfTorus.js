@@ -210,7 +210,7 @@ class HopfTorus{
         let fiberCurve = function(s){
             return origin.clone().add(dir.clone().multiplyScalar(s));
         }
-        return this.getLift(fiberCurve,color, radius, glass);
+        return this.getLift(fiberCurve,color, radius, glass,true);
     }
 
     getOppEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
@@ -219,7 +219,7 @@ class HopfTorus{
         let edgeCurve = function(t){
             return origin.clone().add(dir.clone().multiplyScalar(t));
         }
-        return this.getLift(edgeCurve,color, radius, glass);
+        return this.getLift(edgeCurve,color, radius, glass,true);
     }
 
     getEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
@@ -228,7 +228,7 @@ class HopfTorus{
         let edgeCurve = function(t){
             return origin.clone().add(dir.clone().multiplyScalar(t));
         }
-        return this.getLift(edgeCurve,color, radius, glass);
+        return this.getLift(edgeCurve,color, radius, glass,true);
     }
 
     getGridlines(N, color= colors.blue, radius=0.025, glass=false){
