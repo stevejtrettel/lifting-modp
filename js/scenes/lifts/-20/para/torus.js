@@ -22,15 +22,17 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
 
+import {colors,redShades} from "../../../../items/utils";
 import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
-
+import {coordCurve, latticeData} from "/data/-20/para/tau";
+import data from "/data/-20/para/data-sm"
 
 // init scene and objects, and lights
 //--------------------------------------------
+
+
+
 
 
 const scene = new Scene();
@@ -40,58 +42,26 @@ const scene = new Scene();
 let torus = new HopfTorus(coordCurve,latticeData);
 
 
+
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff, true);
-scene.add(surf);
+//let surf = torus.getSurface(0xffffff,true);
+//scene.add(surf);
+
 
 
 //drawing points over finite field:
 let points = new Group();
 scene.add(points);
+
+
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
+    points.add(torus.getPoint(pt,redShades.medium,0.07));
 }
 
 
-let pt = torus.fromTauCoords(data[0]);
-console.log(data[0]);
-points.add(torus.getPoint(pt,colors.purple,0.052));
 
 
-
-//drawing edge!!!
-
-// //for the subgroup
-// let groupPath = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = torus.fromTauCoords([0.3,0.1]);
-//     return dir.multiplyScalar(10*t);
-// }
-// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
-//
-
-
-
-
-
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
 
 
 
@@ -126,6 +96,9 @@ scene.add( targetObject );
 
 
 
+
+
+
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
@@ -135,13 +108,13 @@ const ground = new Mesh(
 ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene

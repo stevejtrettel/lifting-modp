@@ -22,76 +22,95 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
-
-import HopfTorus from "../../../../items/HopfTorus";
+import {colors} from "/js/items/utils";
+import FD from "/js/items/FD";
 import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
+import data from "/data/-4/3"
 
-
-// init scene and objects, and lights
-//--------------------------------------------
 
 
 const scene = new Scene();
 
+let fd = new FD(latticeData.tau,1);
 
-// the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
-
-
-//drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff, true);
-scene.add(surf);
-
+let domain = new Group();
+domain.add(fd.getParallelogram());
+domain.add(fd.getGridlines(1,colors.glass,0.015,true));
+domain.position.set(0,-0.05,0);
+scene.add(domain);
 
 //drawing points over finite field:
 let points = new Group();
 scene.add(points);
 for(let i=0; i<data.length;i++){
-    let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
+    points.add(fd.getDataPoint(data[i],colors.red,0.025));
 }
 
 
-let pt = torus.fromTauCoords(data[0]);
-console.log(data[0]);
-points.add(torus.getPoint(pt,colors.purple,0.052));
 
 
-
-//drawing edge!!!
-
-// //for the subgroup
-// let groupPath = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = torus.fromTauCoords([0.3,0.1]);
-//     return dir.multiplyScalar(10*t);
-// }
-// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
+//draw the group orbit:
+//
+// //the original group
+// let orbit = new Group();
+// scene.add(orbit);
+// orbit.add(fd.getLine([0,0],[1,1/3],colors.blue,0.02));
+// orbit.add(fd.getLine([0,1/3],[1,2/3],colors.blue,0.02));
+// orbit.add(fd.getLine([0,2/3],[1,1],colors.blue,0.02));
+//
+//
+// //the coset
+// let orbit2 = new Group();
+// scene.add(orbit2);
+// orbit2.add( fd.getLine([0,1/6],[1,1/2],0x2866c9,0.02));
+// orbit2.add(fd.getLine([0,1/2],[1,5/6],0x2866c9,0.02));
+// orbit2.add(fd.getLine([0,5/6],[1/2,1],0x2866c9,0.02));
+// orbit2.add(fd.getLine([1/2,0],[1,1/6],0x2866c9,0.02));
+//
+// //all the edges!
+// //these come from adding (1/2,0) to each point!!!
+// //here are the points of the orig group (each connected to a pt of coset)
+// //    [0,0],
+// //     [0.1, 0.7],
+// //     [0.2, 0.4],
+// //     [ 0.3, 0.1],
+// //     [0.4, 0.8],
+// //     [ 0.5, 0.5],
+// //     [0.6, 0.2],
+// //     [ 0.7, 0.9],
+// //     [0.8, 0.6],
+// //     [ 0.9, 0.3]
+//
+//
+// let tracks = new Group();
+// scene.add(tracks);
+// tracks.add(fd.getLine([0,0],[0.5,0],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.1,0.7],[0.6,0.7],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.2,0.4],[0.7,0.4],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.3,0.1],[0.8,0.1],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.4,0.8],[0.9,0.8],colors.yellow,0.02));
+// tracks.add(fd.getLine([0.5,0.5],[1,0.5],colors.yellow,0.02));
+//
+// //some of the remaining need two pieces
+// tracks.add(fd.getLine([0.6,0.2],[1,0.2],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.2],[0.1,0.2],colors.yellow,0.02));
+//
+// tracks.add(fd.getLine([0.7,0.9],[1,0.9],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.9],[0.2,0.9],colors.yellow,0.02));
+//
+// tracks.add(fd.getLine([0.8,0.6],[1,0.6],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.6],[0.3,0.6],colors.yellow,0.02));
+//
+// tracks.add(fd.getLine([0.9,0.3],[1,0.3],colors.yellow,0.02));
+// tracks.add(fd.getLine([0,0.3],[0.4,0.3],colors.yellow,0.02));
+//
 //
 
 
 
 
 
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
+
 
 
 
@@ -126,13 +145,16 @@ scene.add( targetObject );
 
 
 
+
+
+
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(-1.,-1,-1);
 scene.add(ground);
 
 const backWall = new Mesh(
@@ -140,7 +162,7 @@ const backWall = new Mesh(
     new MeshPhysicalMaterial({
     }),
 );
-backWall.position.set(0,4,31);
+backWall.position.set(0,4,10);
 scene.add(backWall);
 
 
@@ -158,7 +180,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0,3,-1);
 camera.lookAt( 0, 0, 0 );
 
 

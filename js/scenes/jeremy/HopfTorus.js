@@ -1,20 +1,16 @@
 import {
     Vector2,
     Vector3,
-    MeshPhysicalMaterial, Mesh, CatmullRomCurve3, SphereGeometry, Group,
-    DoubleSide, BoxGeometry, DodecahedronGeometry,
+    Mesh, CatmullRomCurve3, SphereGeometry, Group,
 } from "three";
 
 
 import{
-    sphCoords,
     toroidalCoords,
     stereoProj,
-    makeMaterial,
-    colors
-} from "./utils";
-import ParametricGeometry from "./ParametricGeometry";
-import {VarTubeGeometry} from "./VarTubeGeometry";
+} from "../../items/utils";
+import ParametricGeometry from "../../items/ParametricGeometry";
+import {VarTubeGeometry} from "../../items/VarTubeGeometry";
 
 
 
@@ -112,16 +108,6 @@ class HopfTorus{
                 pt = pt.sub(gen);
             }
 
-          //  figure out the vertical shift that needs to happen
-          //   let vert = Math.floor(pt.y/(length/2));
-          //   //subtract the appropriate number of the generator:
-          //   pt.sub(new Vector2(area/2,length/2).multiplyScalar(vert));
-            //FIBER DIRECTION PARAMETERIZATION IS DEFINED EVERYWHERE: DON'T NEED TO GET IN THERE!
-            //now do the same for the horizontal (fiber) direction:
-            //at height y, we want x to be between a/l y and a/l y + 2PI
-            // let offset = pt.x - area/length*pt.y;
-            // let horiz = Math.floor(offset/(2.*Math.PI));
-            // pt.sub(new Vector2(2*Math.PI,0).multiplyScalar(horiz));
             return pt;
         }
         this.toFundamentalDomain = toFundamentalDomain;
@@ -146,7 +132,7 @@ class HopfTorus{
 
     }
 
-    getSurface(color=colors.glass, glass=false){
+    getSurface(material){
         //now build the geometry of the hopf surface:
         //this is a function on [0,2pi]x[0,2pi]
         let coordCurve = this.coordCurve;
@@ -162,26 +148,11 @@ class HopfTorus{
             dest.set(p.x,p.y,p.z);
         }
         let surfGeom = new ParametricGeometry(parameterization, this.res, this.res);
-        let surfMat = makeMaterial(color,glass);
-        return new Mesh(surfGeom, surfMat);
+        return new Mesh(surfGeom, material);
     }
 
-    getSubSurface(parameterization, color=colors.glass, glass=false){
-        let isometricImage = this.isometricImage;
-        let surfParameterization = function(s,t,dest){
-            //s and t are in [0,1]x[0,1]: correct inputs for parameterization
-            let uv = parameterization(s,t);
-            let p = isometricImage(uv);
-            dest.set(p.x,p.y,p.z);
-        }
-        let surfGeom = new ParametricGeometry(surfParameterization,512,512);
-        surfGeom.computeVertexNormals();//recompute normal vectors
-        let surfMat = makeMaterial(color,glass);
-        surfMat.side = DoubleSide;
-        return new Mesh(surfGeom, surfMat);
-    }
 
-    getLift(planecurve, color =  colors.red, radius=0.05,  glass=false,closed = false){
+    getLift(planecurve, radius=0.05, material,closed = false){
         //DOMAIN OF CURVE: [0,1]
         //given a curve x->(s(x),t(x)) in the domain
         //lift under isometry to hopf torus
@@ -198,62 +169,60 @@ class HopfTorus{
         let curve  = new CatmullRomCurve3(curvePts);
         let radii = new CatmullRomCurve3(radiusValues);
         let curveGeom = new VarTubeGeometry(curve, radii, 2.*this.res,  16, closed);
-        let mat = makeMaterial(color,glass);
-        return new Mesh(curveGeom, mat);
+        return new Mesh(curveGeom, material);
     }
 
 
-    getFiberAt(x, color=colors.blue, radius=0.025, glass=false){
+    getFiberAt(x, radius=0.025, mateirla){
         let edgeGen = new Vector2(this.area/2,this.length/2);
         let origin = edgeGen.multiplyScalar(x);
         let dir = new Vector2(2*Math.PI,0);
         let fiberCurve = function(s){
             return origin.clone().add(dir.clone().multiplyScalar(s));
         }
-        return this.getLift(fiberCurve,color, radius, glass,true);
+        return this.getLift(fiberCurve, radius, material);
     }
 
-    getOppEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
+    getOppEdgeAt(x, radius=0.025, material){
         let dir = new Vector2(-this.area/2,this.length/2);
         let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
         let edgeCurve = function(t){
             return origin.clone().add(dir.clone().multiplyScalar(t));
         }
-        return this.getLift(edgeCurve,color, radius, glass,true);
+        return this.getLift(edgeCurve, radius, material);
     }
 
-    getEdgeAt(x, color=colors.blue, radius=0.025, glass=false){
+    getEdgeAt(x,  radius=0.025, material){
         let dir = new Vector2(this.area/2,this.length/2);
         let origin = new Vector2(2*Math.PI,0).multiplyScalar(x);
         let edgeCurve = function(t){
             return origin.clone().add(dir.clone().multiplyScalar(t));
         }
-        return this.getLift(edgeCurve,color, radius, glass,true);
+        return this.getLift(edgeCurve, radius, material);
     }
 
-    getGridlines(N, color= colors.blue, radius=0.025, glass=false){
+    getGridlines(N,radius=0.025,material){
         let lines = new Group();
         //get curves on the surface:
         for(let i=0; i<N+1; i++){
-            let horiz = this.getFiberAt(i/N,color,radius,glass);
-            let vert = this.getEdgeAt(i/N,color,radius,glass);
+            let horiz = this.getFiberAt(i/N,radius,material);
+            let vert = this.getEdgeAt(i/N,radius,material);
             lines.add(horiz);
             lines.add(vert);
         }
         return lines;
     }
 
-    getPoint(pt,  color=colors.red, radius=0.05, glass=false,){
+    getPoint(pt, radius=0.05, material){
         let q = this.isometricImage(pt);
         let rescale = 1+q.lengthSq();
-      //  let geom = new BoxGeometry(radius*rescale, radius*rescale, radius*rescale);
-       // let geom = new DodecahedronGeometry(radius*rescale,0);
         let geom = new SphereGeometry(radius*rescale);
-        let mat = makeMaterial(color,glass);
-        let mesh = new Mesh(geom, mat);
+        let mesh = new Mesh(geom, material);
         mesh.position.set(q.x,q.y,q.z);
         return mesh;
     }
+
+
 }
 
 

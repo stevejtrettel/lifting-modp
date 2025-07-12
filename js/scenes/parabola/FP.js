@@ -2,14 +2,11 @@ import {
     WebGLRenderer,
     ACESFilmicToneMapping,
     PerspectiveCamera,
-    Color,
     Scene,
     Mesh,
     MeshPhysicalMaterial,
-    Vector2,
-    BoxGeometry, TorusKnotGeometry,
-    TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,FloatType,
+    BoxGeometry,
+    Group, SphereGeometry, FloatType, DoubleSide,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,76 +19,64 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
-
-import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
+import Grid2D from "../../items/Grid2D";
+import {colors} from "../../items/utils";
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
+//choose our prime!
+let P = 7;
 
 const scene = new Scene();
 
+let graph = new Group();
+scene.add(graph);
 
-// the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
+//make the grid structure
+let grid = new Grid2D();
+
+//lines of a grid
+// let gridlines = grid.getGridLines((P-1)/2);
+// graph.add(gridlines);
+
+//get vertices of grid.
+let vertices = grid.getGridVertices((P-1)/2,colors.glass,0.12,true);
+graph.add(vertices);
 
 
-//drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff, true);
-scene.add(surf);
-
-
-//drawing points over finite field:
-let points = new Group();
-scene.add(points);
-for(let i=0; i<data.length;i++){
-    let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
+let modPCenter = function(x){
+    //shift to be centered at zero
+    if(x>(P-1)/2){
+        return x-P;
+    }
+    return x;
 }
 
 
-let pt = torus.fromTauCoords(data[0]);
-console.log(data[0]);
-points.add(torus.getPoint(pt,colors.purple,0.052));
-
-
-
-//drawing edge!!!
-
-// //for the subgroup
-// let groupPath = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = torus.fromTauCoords([0.3,0.1]);
-//     return dir.multiplyScalar(10*t);
-// }
-// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
-//
+let modPCoords = function(pt){
+    return [modPCenter(pt[0]),modPCenter(pt[1])];
+}
 
 
 
 
+let quadraticPts = new Group();
+graph.add(quadraticPts);
 
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
+for(let i=0; i<P; i++){
+    let j = i*i % P;
+    let sol = modPCoords([i,j]);
+    let pt = grid.getVertex(sol,colors.purple,0.19);
+    quadraticPts.add(pt)
+}
+
+
+
+
+
+
 
 
 
@@ -102,7 +87,7 @@ spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 5.0;
+spotLight.intensity = 2.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -126,22 +111,25 @@ scene.add( targetObject );
 
 
 
+
+
+
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(0.,-0.5,0);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
@@ -158,7 +146,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0., 10, 0.0 );
 camera.lookAt( 0, 0, 0 );
 
 

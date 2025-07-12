@@ -22,11 +22,11 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
-
-import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-4/tau";
+import {redShades,colors} from "../../items/utils";
+import HopfTorus from "../../items/HopfTorus";
+import {coordCurve, latticeData} from "/data/-4/tau";
 import data from "/data/-4/1"
+import FD from "../../items/FD";
 
 
 // init scene and objects, and lights
@@ -36,43 +36,105 @@ import data from "/data/-4/1"
 const scene = new Scene();
 
 
+
+
+let fd = new FD(latticeData.tau,1);
+
+let domain = new Group();
+scene.add(domain);
+
+let parallelogram = new Group();
+domain.add(parallelogram);
+
+parallelogram.add(fd.getParallelogram());
+parallelogram.add(fd.getGridlines(1,colors.glass,0.015,true));
+parallelogram.position.set(0,-0.016,0);
+
+
+//drawing points over finite field:
+let latticePoints = new Group();
+domain.add(latticePoints);
+
+for(let i=0; i<data.length;i++){
+    latticePoints.add(fd.getDataPoint(data[i]));
+}
+//the other vertices
+// latticePoints.add(fd.getDataPoint([1,0]));
+// latticePoints.add(fd.getDataPoint([0,1]));
+// latticePoints.add(fd.getDataPoint([1,1]));
+
+
+domain.scale.set(3,3,3);
+domain.position.set(-1,-3,-2);
+
+
+
+
+let torus = new Group();
+scene.add(torus);
+
 // the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
+let hopf = new HopfTorus(coordCurve,latticeData);
+
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff, true);
-scene.add(surf);
+let surf = hopf.getSurface(0xffffff,true);
+torus.add(surf);
+
 
 
 //drawing points over finite field:
 let points = new Group();
-scene.add(points);
+torus.add(points);
+
+
 for(let i=0; i<data.length;i++){
-    let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
+    let pt = hopf.fromTauCoords(data[i]);
+    points.add(hopf.getPoint(pt,colors.red,0.07));
 }
 
 
-let pt = torus.fromTauCoords(data[0]);
-console.log(data[0]);
-points.add(torus.getPoint(pt,colors.purple,0.052));
+torus.position.set(0,1.5,0);
 
+//0xa32121
 
-
-//drawing edge!!!
+//ADD EDGES!!!!
 
 // //for the subgroup
-// let groupPath = function(t){
+// let subCurve = function(t){
 //     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = torus.fromTauCoords([0.3,0.1]);
+//     let dir = toHopfLattice([0.3,0.1]);
 //     return dir.multiplyScalar(10*t);
 // }
-// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
+// scene.add(torus.getLift(subCurve,0.02,blueColor,false));
 //
-
-
-
+//
+// //for the coset
+// let cosCurve = function(t){
+//     //get new initial direction: in unit square is 0.3, 0.1
+//     let dir = toHopfLattice([0.3,0.1]);
+//     dir.multiplyScalar(10*t);
+//     let offset = toHopfLattice([0.,0.5]);
+//     return dir.add(offset);
+// }
+// scene.add(torus.getLift(cosCurve,0.02,yellowColor,false));
+//
+//
+// //for the edges in-between
+// let tracks = new Group();
+// scene.add(tracks);
+//
+// for(let i=0; i<10; i++){
+//
+//     let start = toHopfLattice([0.3,0.1]);
+//     start.multiplyScalar(i);
+//     let offset = toHopfLattice([0.5,0.]);
+//     let curve = function(t){
+//         return start.clone().add(offset.clone().multiplyScalar(t));
+//     }
+//     tracks.add(torus.getLift(curve,0.02,0x7d32a8));
+// }
 
 
 //
@@ -97,7 +159,7 @@ points.add(torus.getPoint(pt,colors.purple,0.052));
 
 // spot light
 let spotLight = new PhysicalSpotLight( 0xffffff );
-spotLight.position.set( 2, 6.0, 0 );
+spotLight.position.set( 0, 12.0, 0 );
 spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
@@ -126,6 +188,9 @@ scene.add( targetObject );
 
 
 
+
+
+
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
@@ -135,13 +200,13 @@ const ground = new Mesh(
 ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene

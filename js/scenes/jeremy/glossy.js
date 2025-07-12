@@ -2,14 +2,12 @@ import {
     WebGLRenderer,
     ACESFilmicToneMapping,
     PerspectiveCamera,
-    Color,
     Scene,
     Mesh,
     MeshPhysicalMaterial,
-    Vector2,
-    BoxGeometry, TorusKnotGeometry,
-    TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,FloatType,
+    BoxGeometry,
+    Group,
+    Color,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,15 +20,19 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
 
-import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
-
+import {colors,redShades} from "../../items/utils";
+import HopfTorus from "./HopfTorus";
+import {coordCurve, latticeData} from "/data/-4/tau";
+import data from "/data/-4/4"
+import {coordCurve as coordCurve8} from "/data/-8/tau"
+import {latticeData as latticeData8} from "/data/-8/tau"
 
 // init scene and objects, and lights
 //--------------------------------------------
+
+
+
 
 
 const scene = new Scene();
@@ -41,57 +43,83 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff, true);
+// let torusMat = new MeshPhysicalMaterial({color:0xffffff,clearcoat:1,roughness:0});
+// let surf = torus.getSurface(torusMat);
+// scene.add(surf);
+
+
+let torus8 = new HopfTorus(coordCurve8,latticeData8);
+
+
+//drawing the torus surface in R3
+let torusMat = new MeshPhysicalMaterial({color:0x000000,clearcoat:0,roughness:1});
+let surf = torus8.getSurface(torusMat);
 scene.add(surf);
 
 
 //drawing points over finite field:
 let points = new Group();
 scene.add(points);
+
+
+let ballMat = new MeshPhysicalMaterial({
+   // color: 0x404040,//gray
+     color: 0x48498c,//purple
+   // color:0x0f4c81,//blue
+    metalness:0.,
+    clearcoat:1,
+    roughness:0.0,
+    // thinFilm: true,
+    // iridescence: 1.,
+    // iridescenceIOR: 1.75,
+    // iridescenceThickness: 200,
+});
+
+
+
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
+    let ptRad = 0.045;//4
+    //let ptRad = 0.023;//5
+    points.add(torus.getPoint(pt,ptRad,ballMat));
 }
 
 
-let pt = torus.fromTauCoords(data[0]);
-console.log(data[0]);
-points.add(torus.getPoint(pt,colors.purple,0.052));
+
+let specialBallMat = new MeshPhysicalMaterial({
+    //color:0xc95042,//orange
+     color: 0xffffff,
+         //0x48498c,//purple
+    metalness:0,
+    clearcoat:1,
+    roughness:0.,
+    // thinFilm: true,
+    // iridescence: 1.,
+    // iridescenceIOR: 2.,
+    // iridescenceThickness: 400,
+});
+
+//get marked point
+
+let pt = torus.fromTauCoords([0.525,0.8]);
+    //[0.4,0.425]);//IN THROAT
+// [0.525,0.8]);//MID
+    //[0.6375,0.0875]);//ORIG
+scene.add(torus.getPoint(pt,0.048,specialBallMat ));
 
 
 
-//drawing edge!!!
-
-// //for the subgroup
-// let groupPath = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = torus.fromTauCoords([0.3,0.1]);
-//     return dir.multiplyScalar(10*t);
-// }
-// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
-//
 
 
-
-
-
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
+// area light for the scene:
+// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 3.0, 8.0, 8.0 );
+// areaLight.position.x = 3.5;
+// areaLight.position.y = 3.0;
 // areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
+//  //areaLight.rotateZ( - Math.PI / 4 );
 // areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
+// areaLight.isCircular = true;
 // scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
 
 
 
@@ -126,30 +154,37 @@ scene.add( targetObject );
 
 
 
+
+
+
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
-        color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
+        color:0x222224,
+            //0x84898c,
+        clearcoat:0, roughness:0.85,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(-1.,-10,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
 //--------------------------------------------
 // set the environment map
 const texture = new GradientEquirectTexture();
-texture.bottomColor.set( 0xffffff );
-texture.bottomColor.set( 0x666666 );
+texture.topColor.set( 0xf1f0ec);
+    //0xffffff );
+texture.bottomColor.set( 0xf1f0ec);
+    //0x84898c );
 texture.update();
 scene.environment = texture;
 scene.background = texture;
@@ -189,8 +224,10 @@ pathTracer.setScene( scene, camera );
 
 pathTracer.renderScale = Math.max( 1 / window.devicePixelRatio, 0.5 );;
 pathTracer.tiles.setScalar( 3 );
-pathTracer.bounces = 30.;
+pathTracer.bounces = 100.;
 
+pathTracer.transmissiveBounces = 50.;
+pathTracer.multipleImportanceSampling = true;
 
 
 // SCREENSHOTS

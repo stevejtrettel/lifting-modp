@@ -9,7 +9,7 @@ import {
     Vector2,
     BoxGeometry, TorusKnotGeometry,
     TorusGeometry, TubeGeometry, CylinderGeometry,
-    Vector3, Group, SphereGeometry,FloatType,
+    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -22,76 +22,55 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
-import {colors} from "../../../../items/utils";
-
-import HopfTorus from "../../../../items/HopfTorus";
-import {coordCurve,latticeData} from "/data/-4/tau";
-import data from "/data/-4/1"
+import Grid2D from "../../items/Grid2D";
+import {colors} from "../../items/utils";
 
 
 // init scene and objects, and lights
 //--------------------------------------------
 
 
+//color scheme
+const glassColor =0xc9eaff;
+const redColor = 0xd43b3b;//0xe03d24
+const greenColor = 0x4fbf45;
+const blueColor = 0x4287f5;
+const yellowColor = 0xffd738;
+
+
+
+
+
 const scene = new Scene();
 
-
-// the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
-
-
-//drawing the torus surface in R3
-let surf = torus.getSurface(0xffffff, true);
-scene.add(surf);
+//generating grids
+let grid = new Grid2D();
 
 
-//drawing points over finite field:
-let points = new Group();
-scene.add(points);
-for(let i=0; i<data.length;i++){
-    let pt = torus.fromTauCoords(data[i]);
-    points.add(torus.getPoint(pt));
-}
+let orig = new Group();
+scene.add(orig);
+
+//lines of a grid
+orig.add(grid.getGridLines(5));
+
+//get vertices of grid.
+orig.add(grid.getGridVertices(5,colors.glass,0.075,true));
 
 
-let pt = torus.fromTauCoords(data[0]);
-console.log(data[0]);
-points.add(torus.getPoint(pt,colors.purple,0.052));
+let scaled = new Group();
+scene.add(scaled);
 
 
+scaled.add(grid.getGridLines(3,0xf2a2a2,0.015,true));
+scaled.add(grid.getGridVertices(3,0xf2a2a2,0.04,true));
 
-//drawing edge!!!
+let s5 = Math.sqrt(5);
+scaled.scale.set(s5,s5,s5);
 
-// //for the subgroup
-// let groupPath = function(t){
-//     //get new initial direction: in unit square is 0.3, 0.1
-//     let dir = torus.fromTauCoords([0.3,0.1]);
-//     return dir.multiplyScalar(10*t);
-// }
-// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
-//
+let ang = Math.atan2(1,2);
+scaled.rotateY(ang,ang,ang);
 
 
-
-
-
-//
-// // area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
-// areaLight.position.x = 1.5;
-// areaLight.position.y = 1.0;
-// areaLight.position.z = - 0.5;
-// areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = false;
-// scene.add( areaLight );
-//
-// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
-// redLight.position.y = 1.25;
-// redLight.position.z = - 3.5;
-// redLight.rotateX( Math.PI );
-// redLight.isCircular = false;
-// scene.add( redLight );
 
 
 
@@ -102,7 +81,7 @@ spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 5.0;
+spotLight.intensity = 2.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -126,22 +105,25 @@ scene.add( targetObject );
 
 
 
+
+
+
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
         color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
     }),
 );
-ground.position.set(-1.,-4,-1);
+ground.position.set(0.,-0.5,0);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    new MeshPhysicalMaterial({
-    }),
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
@@ -158,7 +140,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0, 4, - 7 );
 camera.lookAt( 0, 0, 0 );
 
 
