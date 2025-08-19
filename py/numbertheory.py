@@ -257,3 +257,6 @@ def rat_eval_mod(coefdic_lc_to_const:dict,x:int,p:int,rev = False):
             return 'Infinity'
     return ev
 
+def trace_frob(fg:tuple[int,int],p:int)->int:
+    f,g = fg
+    return - sum([quad_rec(x**3+f*x+g,p) for x in range(p)])
