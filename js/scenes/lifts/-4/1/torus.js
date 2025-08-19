@@ -42,7 +42,7 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 //drawing the torus surface in R3
 let surf = torus.getSurface(0xffffff, true);
-//scene.add(surf);
+scene.add(surf);
 
 
 //drawing points over finite field:
@@ -54,17 +54,22 @@ for(let i=0; i<data.length;i++){
 }
 
 
+let pt = torus.fromTauCoords(data[0]);
+console.log(data[0]);
+points.add(torus.getPoint(pt,colors.purple,0.052));
+
+
 
 //drawing edge!!!
 
-//for the subgroup
-let groupPath = function(t){
-    //get new initial direction: in unit square is 0.3, 0.1
-    let dir = torus.fromTauCoords([0.3,0.1]);
-    return dir.multiplyScalar(10*t);
-}
-scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
-
+// //for the subgroup
+// let groupPath = function(t){
+//     //get new initial direction: in unit square is 0.3, 0.1
+//     let dir = torus.fromTauCoords([0.3,0.1]);
+//     return dir.multiplyScalar(10*t);
+// }
+// scene.add(torus.getLift(groupPath,colors.blue,0.02,false));
+//
 
 
 
@@ -121,9 +126,6 @@ scene.add( targetObject );
 
 
 
-
-
-
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
     new MeshPhysicalMaterial({
@@ -133,13 +135,13 @@ const ground = new Mesh(
 ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-// const backWall = new Mesh(
-//     new BoxGeometry( 100, 100, 0.1 ),
-//     new MeshPhysicalMaterial({
-//     }),
-// );
-// backWall.position.set(0,4,31);
-// scene.add(backWall);
+const backWall = new Mesh(
+    new BoxGeometry( 100, 100, 0.1 ),
+    new MeshPhysicalMaterial({
+    }),
+);
+backWall.position.set(0,4,31);
+scene.add(backWall);
 
 
 // environment for the scene

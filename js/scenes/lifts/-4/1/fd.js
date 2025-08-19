@@ -48,6 +48,10 @@ for(let i=0; i<data.length;i++){
 }
 
 
+//make the point at infinity purple
+// points.add(fd.getPoint({x:0,y:0},colors.purple,0.055));
+//
+
 
 
 //draw the group orbit:

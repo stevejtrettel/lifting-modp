@@ -67,10 +67,9 @@ fibers.add(hopf.getPreimagePoint(pt5,colors.purple));
 
  //base.rotateX(Math.PI);
 
-
+fibers.position.set(1.5,0,0);
 fibers.scale.set(0.5,0.5,0.5);
-fibers.position.set(0,2.,1);
-fibers.rotateX(-0.5);
+//fibers.rotateX(-0.5);
 
 // spot light
 let spotLight = new PhysicalSpotLight( 0xffffff );
