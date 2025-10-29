@@ -2,12 +2,14 @@ import {
     WebGLRenderer,
     ACESFilmicToneMapping,
     PerspectiveCamera,
+    Color,
     Scene,
     Mesh,
     MeshPhysicalMaterial,
-    BoxGeometry,
-    Group,
-    Color,
+    Vector2,
+    BoxGeometry, TorusKnotGeometry,
+    TorusGeometry, TubeGeometry, CylinderGeometry,
+    Vector3, Group, SphereGeometry, FloatType, DoubleSide,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -21,121 +23,102 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import {colors,redShades} from "../../items/utils";
-import HopfTorus from "./HopfTorus";
-import {coordCurve, latticeData} from "/data/-4/tau";
-import data from "/data/-4/4"
-import {coordCurve as coordCurve8} from "/data/-8/tau"
-import {latticeData as latticeData8} from "/data/-8/tau"
+import {colors, makeMaterial} from "../../items/utils";
+
+import NumericalSurfaceGeometry from "../../items/NumericalSurfaceGeometry";
+import NumericalTubeGeometry from "../../items/NumericalTubeGeometry";
+
+import boundaryPts from "./0_1/boundaryPts";
+import surfacePts from "./0_1/surfacePts";
+// import {realPts1,realPts2} from "./3_0/realPts";
+import realPts from "./0_1/realPts";
+
+
+import { createPathTracerControls } from '../../items/pathTracerControls.js';
+import { showLoading, hideLoading, updateProgress } from '../../items/loadingScreen.js';
+
+
+
 
 // init scene and objects, and lights
 //--------------------------------------------
 
-
-
-
-
 const scene = new Scene();
 
 
-// the computer for dealing with the hopf torus
-let torus = new HopfTorus(coordCurve,latticeData);
-
-
-//drawing the torus surface in R3
-// let torusMat = new MeshPhysicalMaterial({color:0xffffff,clearcoat:1,roughness:0});
-// let surf = torus.getSurface(torusMat);
-// scene.add(surf);
-
-
-let torus8 = new HopfTorus(coordCurve8,latticeData8);
-
-
-//drawing the torus surface in R3
-let torusMat = new MeshPhysicalMaterial({
-    color:0x000000,
-        //0x48498c,
-        //0x000000,
-    clearcoat:0,
-    roughness:1});
-let surf = torus8.getSurface(torusMat);
-scene.add(surf);
-
-
-//drawing points over finite field:
-let points = new Group();
-scene.add(points);
-
-
-let ballMat = new MeshPhysicalMaterial({
-   // color: 0x404040,//gray
-     color: 0x48498c,//purple
-   // color:0x0f4c81,//blue
-    metalness:0.,
-    clearcoat:1,
-    roughness:0.0,
-    // thinFilm: true,
-    // iridescence: 1.,
-    // iridescenceIOR: 1.75,
-    // iridescenceThickness: 200,
-});
+let eCurve = new Group();
 
 
 
-for(let i=0; i<data.length;i++){
-    let pt = torus.fromTauCoords(data[i]);
-    let ptRad = 0.045;//4
-    //let ptRad = 0.023;//5
-    points.add(torus.getPoint(pt,ptRad,ballMat));
-}
+let mat = makeMaterial(0x2b6e25,false);
+mat.side = DoubleSide;
 
-
-
-let specialBallMat = new MeshPhysicalMaterial({
-    //color:0xc95042,//orange
-     color: 0xffffff,
-         //0x48498c,//purple
-    metalness:0,
-    clearcoat:1,
-    roughness:0.,
-    // thinFilm: true,
-    // iridescence: 1.,
-    // iridescenceIOR: 2.,
-    // iridescenceThickness: 400,
-});
-
-//get marked point
-
-let pt = torus.fromTauCoords([0.525,0.8]);
-    //[0.4,0.425]);//IN THROAT
-// [0.525,0.8]);//MID
-    //[0.6375,0.0875]);//ORIG
-scene.add(torus.getPoint(pt,0.048,specialBallMat ));
+let geom = new NumericalSurfaceGeometry(surfacePts);
+let surf = new Mesh(geom,mat);
+eCurve.add(surf);
 
 
 
 
+let bdyMat = makeMaterial(colors.green,false);
+let bdyGeom = new NumericalTubeGeometry(boundaryPts,0.05,true,256);
+let bdy = new Mesh(bdyGeom,bdyMat);
+eCurve.add(bdy);
 
-// area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 3.0, 8.0, 8.0 );
-// areaLight.position.x = 3.5;
-// areaLight.position.y = 3.0;
-// areaLight.position.z = - 0.5;
-//  //areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = true;
-// scene.add( areaLight );
+
+
+//
+// let realMat = makeMaterial(colors.green);
+// let realGeom = new NumericalTubeGeometry(realPts,0.085,false,256);
+// let real = new Mesh(realGeom,realMat);
+// eCurve.add(real);
+
+//
+// let realGeom2 = new NumericalTubeGeometry(realPts2,0.075,true,256);
+// let real2 = new Mesh(realGeom2,realMat);
+// eCurve.add(real2);
+//
+
+
+
+
+let realMat = makeMaterial(0xd6be38);
+let realGeom = new NumericalTubeGeometry(realPts,0.085,false,256);
+let real = new Mesh(realGeom,realMat);
+eCurve.add(real);
+
+//spheres on the end
+let sphGeom = new SphereGeometry(0.15);
+let startPt = new Mesh(sphGeom, realMat);
+let endPt = startPt.clone();
+
+startPt.position.set(1.19, 0., 2.97 );
+endPt.position.set(1.19, 0., -2.97 );
+
+eCurve.add(startPt);
+eCurve.add(endPt);
+
+
+
+ eCurve.rotateX(Math.PI/2);
+//eCurve.rotateZ(-Math.PI/2);
+eCurve.position.set(0,2.5,0);
+scene.add(eCurve);
+
+
+
+
 
 
 
 // spot light
 let spotLight = new PhysicalSpotLight( 0xffffff );
-spotLight.position.set( 2, 6.0, 0 );
+spotLight.position.set( 2, 15.0, -10 );
 spotLight.angle = Math.PI / 2;
 spotLight.decay = 0;
 spotLight.penumbra = 1.0;
 spotLight.distance = 0.0;
-spotLight.intensity = 5.0;
+spotLight.intensity = 2.0;
 spotLight.radius = 0.5;
 
 // spot light shadow
@@ -151,7 +134,7 @@ scene.add( spotLight );
 const targetObject = spotLight.target;
 targetObject.position.x = 1;
 targetObject.position.y = 0;
-targetObject.position.z = 0.05;
+targetObject.position.z = 1.05;
 scene.add( targetObject );
 
 
@@ -159,45 +142,33 @@ scene.add( targetObject );
 
 
 
-const wallMat =     new MeshPhysicalMaterial({
-    color:0x222224,
-    //0x84898c,
-    clearcoat:0, roughness:0.85,metalness:0
-});
+
 
 
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
-    wallMat
+    new MeshPhysicalMaterial({
+        color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
+    }),
 );
-ground.position.set(-1.,-10,-1);
+ground.position.set(0.,-1,0);
 scene.add(ground);
 
 const backWall = new Mesh(
     new BoxGeometry( 100, 100, 0.1 ),
-    wallMat
+    new MeshPhysicalMaterial({
+    }),
 );
-backWall.position.set(0,4,31);
+backWall.position.set(0,0,5);
 scene.add(backWall);
-
-
-
-const sideWall = new Mesh(
-    new BoxGeometry( 0.1, 100, 100 ),
-    wallMat
-);
-sideWall.position.set(31,4,0);
-scene.add(sideWall);
 
 
 // environment for the scene
 //--------------------------------------------
 // set the environment map
 const texture = new GradientEquirectTexture();
-texture.topColor.set( 0xf1f0ec);
-    //0xffffff );
-texture.bottomColor.set( 0xf1f0ec);
-    //0x84898c );
+texture.bottomColor.set( 0xffffff );
+texture.bottomColor.set( 0x666666 );
 texture.update();
 scene.environment = texture;
 scene.background = texture;
@@ -206,8 +177,8 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0, 4.2, - 6 );
-camera.lookAt( 0, 0, 0 );
+camera.position.set( 0, 5, -12 );
+camera.lookAt( 0, 2, 0 );
 
 
 // const camera = new PhysicalCamera( 60, window.innerWidth / window.innerHeight, 0.025, 500 );
@@ -237,10 +208,10 @@ pathTracer.setScene( scene, camera );
 
 pathTracer.renderScale = Math.max( 1 / window.devicePixelRatio, 0.5 );;
 pathTracer.tiles.setScalar( 3 );
-pathTracer.bounces = 100.;
+pathTracer.bounces = 30.;
 
-pathTracer.transmissiveBounces = 50.;
-pathTracer.multipleImportanceSampling = true;
+createPathTracerControls(pathTracer, renderer);
+
 
 
 // SCREENSHOTS
@@ -261,18 +232,18 @@ function saveImage(canvas){
 }
 
 
-const gui = new GUI().close();
-let params = {
-    saveit: ()=>saveImage(renderer.domElement),
-};
-gui.add( params, 'saveit' );
-
+// const gui = new GUI().close();
+// let params = {
+//     saveit: ()=>saveImage(renderer.domElement),
+// };
+// gui.add( params, 'saveit' );
+//
 
 
 //controls
 //--------------------------------------------
 let controls = new OrbitControls( camera, renderer.domElement );
-controls.target.set( 0, 0.33, - 0.08 );
+controls.target.set( 0, 2, - 0.08 );
 controls.addEventListener( 'change', () => pathTracer.updateCamera() );
 controls.update();
 // controls.addEventListener( 'change', () => {

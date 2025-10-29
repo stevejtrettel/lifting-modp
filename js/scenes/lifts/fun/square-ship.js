@@ -2,12 +2,14 @@ import {
     WebGLRenderer,
     ACESFilmicToneMapping,
     PerspectiveCamera,
+    Color,
     Scene,
     Mesh,
     MeshPhysicalMaterial,
-    BoxGeometry,
-    Group,
-    Color,
+    Vector2,
+    BoxGeometry, TorusKnotGeometry,
+    TorusGeometry, TubeGeometry, CylinderGeometry,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -21,12 +23,14 @@ import {
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 
-import {colors,redShades} from "../../items/utils";
-import HopfTorus from "./HopfTorus";
+import {colors,redShades} from "../../../items/utils";
+import HopfTorus from "../../../items/HopfTorus";
 import {coordCurve, latticeData} from "/data/-4/tau";
 import data from "/data/-4/4"
-import {coordCurve as coordCurve8} from "/data/-8/tau"
-import {latticeData as latticeData8} from "/data/-8/tau"
+
+import { createPathTracerControls } from '../../../items/pathTracerControls.js';
+import { showLoading, hideLoading, updateProgress } from '../../../items/loadingScreen.js';
+
 
 // init scene and objects, and lights
 //--------------------------------------------
@@ -42,24 +46,18 @@ const scene = new Scene();
 let torus = new HopfTorus(coordCurve,latticeData);
 
 
+
 //drawing the torus surface in R3
-// let torusMat = new MeshPhysicalMaterial({color:0xffffff,clearcoat:1,roughness:0});
-// let surf = torus.getSurface(torusMat);
+// let surf = torus.getSurface(0xffffff,true);
 // scene.add(surf);
 
 
-let torus8 = new HopfTorus(coordCurve8,latticeData8);
+// SLOW STUFF - only the points loading
+async function loadPoints() {
+    showLoading("Loading geometry...", true);
+    await new Promise(resolve => setTimeout(resolve, 50));
 
 
-//drawing the torus surface in R3
-let torusMat = new MeshPhysicalMaterial({
-    color:0x000000,
-        //0x48498c,
-        //0x000000,
-    clearcoat:0,
-    roughness:1});
-let surf = torus8.getSurface(torusMat);
-scene.add(surf);
 
 
 //drawing points over finite field:
@@ -67,64 +65,77 @@ let points = new Group();
 scene.add(points);
 
 
-let ballMat = new MeshPhysicalMaterial({
-   // color: 0x404040,//gray
-     color: 0x48498c,//purple
-   // color:0x0f4c81,//blue
-    metalness:0.,
-    clearcoat:1,
-    roughness:0.0,
-    // thinFilm: true,
-    // iridescence: 1.,
-    // iridescenceIOR: 1.75,
-    // iridescenceThickness: 200,
-});
-
-
-
 for(let i=0; i<data.length;i++){
     let pt = torus.fromTauCoords(data[i]);
-    let ptRad = 0.045;//4
-    //let ptRad = 0.023;//5
-    points.add(torus.getPoint(pt,ptRad,ballMat));
+    points.add(torus.getPoint(pt,0xD16B0C,0.045));
 }
 
 
 
-let specialBallMat = new MeshPhysicalMaterial({
-    //color:0xc95042,//orange
-     color: 0xffffff,
-         //0x48498c,//purple
-    metalness:0,
-    clearcoat:1,
-    roughness:0.,
-    // thinFilm: true,
-    // iridescence: 1.,
-    // iridescenceIOR: 2.,
-    // iridescenceThickness: 400,
-});
-
 //get marked point
+let pt = torus.fromTauCoords( [0.6375,0.0875]);
+scene.add(torus.getPoint(pt,redShades.dark,0.048));
 
-let pt = torus.fromTauCoords([0.525,0.8]);
-    //[0.4,0.425]);//IN THROAT
-// [0.525,0.8]);//MID
-    //[0.6375,0.0875]);//ORIG
-scene.add(torus.getPoint(pt,0.048,specialBallMat ));
-
+    hideLoading();
+}
 
 
 
+//ADD EDGES!!!!
 
-// area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 3.0, 8.0, 8.0 );
-// areaLight.position.x = 3.5;
-// areaLight.position.y = 3.0;
+// //for the subgroup
+// let subCurve = function(t){
+//     //get new initial direction: in unit square is 0.3, 0.1
+//     let dir = toHopfLattice([0.3,0.1]);
+//     return dir.multiplyScalar(10*t);
+// }
+// scene.add(torus.getLift(subCurve,0.02,blueColor,false));
+//
+//
+// //for the coset
+// let cosCurve = function(t){
+//     //get new initial direction: in unit square is 0.3, 0.1
+//     let dir = toHopfLattice([0.3,0.1]);
+//     dir.multiplyScalar(10*t);
+//     let offset = toHopfLattice([0.,0.5]);
+//     return dir.add(offset);
+// }
+// scene.add(torus.getLift(cosCurve,0.02,yellowColor,false));
+//
+//
+// //for the edges in-between
+// let tracks = new Group();
+// scene.add(tracks);
+//
+// for(let i=0; i<10; i++){
+//
+//     let start = toHopfLattice([0.3,0.1]);
+//     start.multiplyScalar(i);
+//     let offset = toHopfLattice([0.5,0.]);
+//     let curve = function(t){
+//         return start.clone().add(offset.clone().multiplyScalar(t));
+//     }
+//     tracks.add(torus.getLift(curve,0.02,0x7d32a8));
+// }
+
+
+//
+// // area light for the scene:
+// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 5.0, 1.0, 1.0 );
+// areaLight.position.x = 1.5;
+// areaLight.position.y = 1.0;
 // areaLight.position.z = - 0.5;
-//  //areaLight.rotateZ( - Math.PI / 4 );
+// areaLight.rotateZ( - Math.PI / 4 );
 // areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = true;
+// areaLight.isCircular = false;
 // scene.add( areaLight );
+//
+// let redLight = new ShapedAreaLight( new Color( 0xff0000 ), 15.0, 3.25, 3.75 );
+// redLight.position.y = 1.25;
+// redLight.position.z = - 3.5;
+// redLight.rotateX( Math.PI );
+// redLight.isCircular = false;
+// scene.add( redLight );
 
 
 
@@ -159,45 +170,33 @@ scene.add( targetObject );
 
 
 
-const wallMat =     new MeshPhysicalMaterial({
-    color:0x222224,
-    //0x84898c,
-    clearcoat:0, roughness:0.85,metalness:0
-});
+
 
 
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
-    wallMat
+    new MeshPhysicalMaterial({
+        color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
+    }),
 );
-ground.position.set(-1.,-10,-1);
+ground.position.set(-1.,-4,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    wallMat
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
-
-
-
-const sideWall = new Mesh(
-    new BoxGeometry( 0.1, 100, 100 ),
-    wallMat
-);
-sideWall.position.set(31,4,0);
-scene.add(sideWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
 //--------------------------------------------
 // set the environment map
 const texture = new GradientEquirectTexture();
-texture.topColor.set( 0xf1f0ec);
-    //0xffffff );
-texture.bottomColor.set( 0xf1f0ec);
-    //0x84898c );
+texture.bottomColor.set( 0xffffff );
+texture.bottomColor.set( 0x666666 );
 texture.update();
 scene.environment = texture;
 scene.background = texture;
@@ -206,7 +205,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0, 4.2, - 6 );
+camera.position.set( 0.1, 8, - 0.1 );
 camera.lookAt( 0, 0, 0 );
 
 
@@ -237,10 +236,10 @@ pathTracer.setScene( scene, camera );
 
 pathTracer.renderScale = Math.max( 1 / window.devicePixelRatio, 0.5 );;
 pathTracer.tiles.setScalar( 3 );
-pathTracer.bounces = 100.;
+pathTracer.bounces = 30.;
 
-pathTracer.transmissiveBounces = 50.;
-pathTracer.multipleImportanceSampling = true;
+createPathTracerControls(pathTracer, renderer);
+
 
 
 // SCREENSHOTS
@@ -261,12 +260,12 @@ function saveImage(canvas){
 }
 
 
-const gui = new GUI().close();
-let params = {
-    saveit: ()=>saveImage(renderer.domElement),
-};
-gui.add( params, 'saveit' );
-
+// const gui = new GUI().close();
+// let params = {
+//     saveit: ()=>saveImage(renderer.domElement),
+// };
+// gui.add( params, 'saveit' );
+//
 
 
 //controls
@@ -320,3 +319,11 @@ function onResize() {
 
 }
 
+
+
+
+// START EVERYTHING - this replaces your old onResize(); animate(); at the bottom
+loadPoints().then(() => {
+    onResize();
+    animate();
+});

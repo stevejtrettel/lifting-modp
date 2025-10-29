@@ -59,7 +59,7 @@ for(let i=0; i<data.length;i++){
 
 //add in the marked point!
  let pt = torus.fromTauCoords( [0.63997477,0.01638131]);
-scene.add(torus.getPoint(pt,0x1f9903,0.014));
+scene.add(torus.getPoint(pt,0x1f9903,0.034));
 
 
 

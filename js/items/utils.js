@@ -41,7 +41,7 @@ let makeMaterial = function(color=glassColor, glass=false){
     let props = {
         color:color,
         //clearcoat:1,
-        roughness:0.3,
+        roughness:0.6,
         metalness:0,
     }
     if(glass){

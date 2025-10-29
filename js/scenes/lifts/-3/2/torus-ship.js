@@ -2,12 +2,14 @@ import {
     WebGLRenderer,
     ACESFilmicToneMapping,
     PerspectiveCamera,
+    Color,
     Scene,
     Mesh,
     MeshPhysicalMaterial,
-    BoxGeometry,
-    Group,
-    Color,
+    Vector2,
+    BoxGeometry, TorusKnotGeometry,
+    TorusGeometry, TubeGeometry, CylinderGeometry,
+    Vector3, Group, SphereGeometry,FloatType,
 } from "three";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -20,19 +22,17 @@ import {
 
 import {GUI} from "three/examples/jsm/libs/lil-gui.module.min.js";
 
+import {colors,greenShades} from "../../../../items/utils";
+import HopfTorus from "../../../../items/HopfTorus";
+import {coordCurve,latticeData} from "/data/-3/tau";
 
-import {colors,redShades} from "../../items/utils";
-import HopfTorus from "./HopfTorus";
-import {coordCurve, latticeData} from "/data/-4/tau";
-import data from "/data/-4/4"
-import {coordCurve as coordCurve8} from "/data/-8/tau"
-import {latticeData as latticeData8} from "/data/-8/tau"
+import data4 from "/data/-3/2"
+
+import { createPathTracerControls } from "../../../../items/PathTracerControls";
+
 
 // init scene and objects, and lights
 //--------------------------------------------
-
-
-
 
 
 const scene = new Scene();
@@ -43,89 +43,42 @@ let torus = new HopfTorus(coordCurve,latticeData);
 
 
 //drawing the torus surface in R3
-// let torusMat = new MeshPhysicalMaterial({color:0xffffff,clearcoat:1,roughness:0});
-// let surf = torus.getSurface(torusMat);
-// scene.add(surf);
-
-
-let torus8 = new HopfTorus(coordCurve8,latticeData8);
-
-
-//drawing the torus surface in R3
-let torusMat = new MeshPhysicalMaterial({
-    color:0x000000,
-        //0x48498c,
-        //0x000000,
-    clearcoat:0,
-    roughness:1});
-let surf = torus8.getSurface(torusMat);
+let surf = torus.getSurface();
 scene.add(surf);
 
 
-//drawing points over finite field:
-let points = new Group();
-scene.add(points);
+
+// let points4 = new Group();
+// scene.add(points4);
+// for(let i=0; i<data4.length;i++){
+//     let pt = torus.fromTauCoords(data4[i]);
+//     points4.add(torus.getPoint(pt,greenShades.medium,0.025));
+// }
 
 
-let ballMat = new MeshPhysicalMaterial({
-   // color: 0x404040,//gray
-     color: 0x48498c,//purple
-   // color:0x0f4c81,//blue
-    metalness:0.,
-    clearcoat:1,
-    roughness:0.0,
-    // thinFilm: true,
-    // iridescence: 1.,
-    // iridescenceIOR: 1.75,
-    // iridescenceThickness: 200,
-});
+import { showLoading, hideLoading, updateProgress, updateLoadingText } from '../../../../items/loadingScreen';
 
+// SLOW STUFF - only the points loading
+async function loadPoints() {
+    showLoading("Loading geometry...", true);
+    await new Promise(resolve => setTimeout(resolve, 50));
 
+    let points4 = new Group();
+    const CHUNK_SIZE = 200;
 
-for(let i=0; i<data.length;i++){
-    let pt = torus.fromTauCoords(data[i]);
-    let ptRad = 0.045;//4
-    //let ptRad = 0.023;//5
-    points.add(torus.getPoint(pt,ptRad,ballMat));
+    for(let i = 0; i < data4.length; i++) {
+        let pt = torus.fromTauCoords(data4[i]);
+        points4.add(torus.getPoint(pt, greenShades.medium, 0.085));
+
+        if (i % CHUNK_SIZE === 0) {
+            updateProgress((i / data4.length) * 100);
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+    }
+
+    scene.add(points4);
+    hideLoading();
 }
-
-
-
-let specialBallMat = new MeshPhysicalMaterial({
-    //color:0xc95042,//orange
-     color: 0xffffff,
-         //0x48498c,//purple
-    metalness:0,
-    clearcoat:1,
-    roughness:0.,
-    // thinFilm: true,
-    // iridescence: 1.,
-    // iridescenceIOR: 2.,
-    // iridescenceThickness: 400,
-});
-
-//get marked point
-
-let pt = torus.fromTauCoords([0.525,0.8]);
-    //[0.4,0.425]);//IN THROAT
-// [0.525,0.8]);//MID
-    //[0.6375,0.0875]);//ORIG
-scene.add(torus.getPoint(pt,0.048,specialBallMat ));
-
-
-
-
-
-// area light for the scene:
-// let areaLight = new ShapedAreaLight( new Color( 0xffffff ), 3.0, 8.0, 8.0 );
-// areaLight.position.x = 3.5;
-// areaLight.position.y = 3.0;
-// areaLight.position.z = - 0.5;
-//  //areaLight.rotateZ( - Math.PI / 4 );
-// areaLight.rotateX( - Math.PI / 2 );
-// areaLight.isCircular = true;
-// scene.add( areaLight );
-
 
 
 // spot light
@@ -159,45 +112,33 @@ scene.add( targetObject );
 
 
 
-const wallMat =     new MeshPhysicalMaterial({
-    color:0x222224,
-    //0x84898c,
-    clearcoat:0, roughness:0.85,metalness:0
-});
+
 
 
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
-    wallMat
+    new MeshPhysicalMaterial({
+        color:0xffffff, clearcoat:1, roughness:0.5,metalness:0
+    }),
 );
-ground.position.set(-1.,-10,-1);
+ground.position.set(-1.,-2,-1);
 scene.add(ground);
 
-const backWall = new Mesh(
-    new BoxGeometry( 100, 100, 0.1 ),
-    wallMat
-);
-backWall.position.set(0,4,31);
-scene.add(backWall);
-
-
-
-const sideWall = new Mesh(
-    new BoxGeometry( 0.1, 100, 100 ),
-    wallMat
-);
-sideWall.position.set(31,4,0);
-scene.add(sideWall);
+// const backWall = new Mesh(
+//     new BoxGeometry( 100, 100, 0.1 ),
+//     new MeshPhysicalMaterial({
+//     }),
+// );
+// backWall.position.set(0,4,31);
+// scene.add(backWall);
 
 
 // environment for the scene
 //--------------------------------------------
 // set the environment map
 const texture = new GradientEquirectTexture();
-texture.topColor.set( 0xf1f0ec);
-    //0xffffff );
-texture.bottomColor.set( 0xf1f0ec);
-    //0x84898c );
+texture.bottomColor.set( 0xffffff );
+texture.bottomColor.set( 0x666666 );
 texture.update();
 scene.environment = texture;
 scene.background = texture;
@@ -206,7 +147,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 0, 4.2, - 6 );
+camera.position.set( 0.1, 10, - 0.1 );
 camera.lookAt( 0, 0, 0 );
 
 
@@ -222,12 +163,25 @@ camera.lookAt( 0, 0, 0 );
 
 // set up the renderer
 //--------------------------------------------
+// let renderer = new WebGLRenderer({
+//     preserveDrawingBuffer:true,
+// });
+// renderer.toneMapping = ACESFilmicToneMapping;
+// document.body.appendChild( renderer.domElement );
+
 let renderer = new WebGLRenderer({
     preserveDrawingBuffer:true,
 });
 renderer.toneMapping = ACESFilmicToneMapping;
-document.body.appendChild( renderer.domElement );
 
+// Target the #World div
+const container = document.getElementById('World');
+if (container) {
+    container.appendChild( renderer.domElement );
+} else {
+    // Fallback to body if World doesn't exist
+    document.body.appendChild( renderer.domElement );
+}
 
 
 // set up the Path tracer
@@ -237,10 +191,9 @@ pathTracer.setScene( scene, camera );
 
 pathTracer.renderScale = Math.max( 1 / window.devicePixelRatio, 0.5 );;
 pathTracer.tiles.setScalar( 3 );
-pathTracer.bounces = 100.;
+pathTracer.bounces = 30.;
 
-pathTracer.transmissiveBounces = 50.;
-pathTracer.multipleImportanceSampling = true;
+createPathTracerControls(pathTracer,renderer);
 
 
 // SCREENSHOTS
@@ -261,11 +214,11 @@ function saveImage(canvas){
 }
 
 
-const gui = new GUI().close();
-let params = {
-    saveit: ()=>saveImage(renderer.domElement),
-};
-gui.add( params, 'saveit' );
+// const gui = new GUI().close();
+// let params = {
+//     saveit: ()=>saveImage(renderer.domElement),
+// };
+// gui.add( params, 'saveit' );
 
 
 
@@ -287,10 +240,6 @@ controls.update();
 //--------------------------------------------
 
 
-onResize();
-
-animate();
-
 window.addEventListener( 'resize', onResize );
 
 function animate() {
@@ -303,11 +252,27 @@ function animate() {
 
 }
 
-function onResize() {
+// function onResize() {
+//
+//     // update rendering resolution
+//     const w = window.innerWidth;
+//     const h = window.innerHeight;
+//
+//     renderer.setSize( w, h );
+//     renderer.setPixelRatio( window.devicePixelRatio );
+//
+//     const aspect = w / h;
+//     camera.aspect = aspect;
+//     camera.updateProjectionMatrix();
+//
+//     pathTracer.setScene( scene, camera );
+//
+// }
 
-    // update rendering resolution
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+function onResize() {
+    const container = document.getElementById('World');
+    const w = container ? container.clientWidth : window.innerWidth;
+    const h = container ? container.clientHeight : window.innerHeight;
 
     renderer.setSize( w, h );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -317,6 +282,12 @@ function onResize() {
     camera.updateProjectionMatrix();
 
     pathTracer.setScene( scene, camera );
-
 }
 
+
+
+// START EVERYTHING - this replaces your old onResize(); animate(); at the bottom
+loadPoints().then(() => {
+    onResize();
+    animate();
+});
