@@ -40,9 +40,9 @@ let sphCoords = function(angles){
 let makeMaterial = function(color=glassColor, glass=false){
     let props = {
         color:color,
-        //clearcoat:1,
-        roughness:0.6,
-        metalness:0,
+        clearcoat:1,
+        roughness:0.1,
+        metalness:0.8,
     }
     if(glass){
         props.transparent=true;
