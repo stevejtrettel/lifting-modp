@@ -26,7 +26,7 @@ class FD{
     }
 
     getParallelogram(color = colors.glass, glass=false){
-        const geometry = new BoxGeometry(1,1,0.1);
+        const geometry = new BoxGeometry(1,1,0.025);
         geometry.scale(this.width,this.tau.y,1);
         geometry.translate(this.width/2,this.tau.y/2,0.05);
         const matrix = new Matrix4();

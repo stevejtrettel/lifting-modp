@@ -73,9 +73,13 @@ eCurve.add(bdy);
 //
 
 
+
+
+
+
  eCurve.rotateX(Math.PI/2);
 //eCurve.rotateZ(-Math.PI/2);
-eCurve.position.set(0,4,0);
+eCurve.position.set(0,2.5,0);
 scene.add(eCurve);
 
 

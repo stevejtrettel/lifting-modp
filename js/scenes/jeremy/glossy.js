@@ -52,7 +52,12 @@ let torus8 = new HopfTorus(coordCurve8,latticeData8);
 
 
 //drawing the torus surface in R3
-let torusMat = new MeshPhysicalMaterial({color:0x000000,clearcoat:0,roughness:1});
+let torusMat = new MeshPhysicalMaterial({
+    color:0x000000,
+        //0x48498c,
+        //0x000000,
+    clearcoat:0,
+    roughness:1});
 let surf = torus8.getSurface(torusMat);
 scene.add(surf);
 
@@ -154,27 +159,35 @@ scene.add( targetObject );
 
 
 
-
+const wallMat =     new MeshPhysicalMaterial({
+    color:0x222224,
+    //0x84898c,
+    clearcoat:0, roughness:0.85,metalness:0
+});
 
 
 const ground = new Mesh(
     new BoxGeometry( 100, 0.1, 100 ),
-    new MeshPhysicalMaterial({
-        color:0x222224,
-            //0x84898c,
-        clearcoat:0, roughness:0.85,metalness:0
-    }),
+    wallMat
 );
 ground.position.set(-1.,-10,-1);
 scene.add(ground);
 
-// const backWall = new Mesh(
-//     new BoxGeometry( 100, 100, 0.1 ),
-//     new MeshPhysicalMaterial({
-//     }),
-// );
-// backWall.position.set(0,4,31);
-// scene.add(backWall);
+const backWall = new Mesh(
+    new BoxGeometry( 100, 100, 0.1 ),
+    wallMat
+);
+backWall.position.set(0,4,31);
+scene.add(backWall);
+
+
+
+const sideWall = new Mesh(
+    new BoxGeometry( 0.1, 100, 100 ),
+    wallMat
+);
+sideWall.position.set(31,4,0);
+scene.add(sideWall);
 
 
 // environment for the scene
@@ -193,7 +206,7 @@ scene.background = texture;
 // camera
 //--------------------------------------------
 const camera = new PerspectiveCamera();
-camera.position.set( 1, 2.2, - 5 );
+camera.position.set( 0, 4.2, - 6 );
 camera.lookAt( 0, 0, 0 );
 
 

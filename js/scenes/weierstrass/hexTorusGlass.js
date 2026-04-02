@@ -43,7 +43,7 @@ const scene = new Scene();
 let eCurve = new Group();
 
 
-let mat = makeMaterial(0xa4e89e,true);
+let mat = makeMaterial(0xa4e89e,false);
 mat.side = DoubleSide;
 
 let geom = new NumericalSurfaceGeometry(surfacePts);
