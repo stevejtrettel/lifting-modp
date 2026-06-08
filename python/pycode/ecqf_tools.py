@@ -35,8 +35,16 @@ def get_aps_pc():
 def get_ssps_pc():
     return [p for p in ecqf_ss_1K_pc]
 
+def ap_in_pc_data(ap:tuple[int,int])->bool:
+    if ap[0]==0:
+        return ap[1] in get_ssps_pc()
+    else:
+        return ap in get_aps_pc()
 
 # Misc. tools
+def abc_to_tau(abc:tuple[int,int,int])->np.array:
+    tau_np= np.roots(abc)[0]
+    return np.array([tau_np.real,tau_np.imag])
 
 def abc_to_tau_str(abc):
     a,b,c = qf_make_prim(abc)
@@ -61,7 +69,15 @@ def abc_to_tau_str(abc):
     else:
         return num_str+'/'+str(den)
 
-
+def export_points(grp:list,filename:str):
+    file = open(filename,'a')
+    for i in range((len(grp)//3)+1):
+        stri = ''
+        for vec in grp[3*i:3*(i+1)]:
+            stri += '['+str(vec[0])[:10]+','+str(vec[1])[:10]+'],'
+        stri+='\n'
+        file.write(stri)
+    file.close()
 
 def qf_cond(qf:tuple[int,int,int])->int:
     return discfac(qf_disc(qf))[1]
@@ -338,7 +354,16 @@ def ap_FrbMats_1T(ap:tuple[int,int],s=1):
         qf_to_Fr_mat[qf] = frmat
     return qf_to_Fr_mat
 
-
+def mw_arr_from_gens(abc:tuple,gens:dict)->np.array:
+    den = max(gens.values())
+    one = np.array([1,0])
+    tau = abc_to_tau(abc)
+    pts = [np.array([0,0])]
+    for gen in gens:
+        x,y = gen
+        pts = [(pt0+m*np.array([x,y]))%den 
+               for pt0 in pts for m in range(gens[gen])]
+    return np.array([pt[0]*one+pt[1]*tau for pt in pts])/den
 
             ##############
             # ECQF Class #
@@ -399,6 +424,16 @@ class ECQFIsogenyClass(QFIsogenyClass):
         qf_gens = self.qf_to_mw_gens_dict(k)
         return {qf:pts_from_gendic(qf_gens[qf]) for qf in qf_gens}
     
+    def qf_to_mwgr_arr_single(self,k:int=1,qf:tuple[int,int,int]=None):
+        if qf == None:
+            qf = (self.qfs_all)[0]
+        frm = self.qf_to_frob_mats[qf]
+        mwgens = frob_to_mw_gens(frm,k)
+        if len(mwgens)==0:
+            return [np.array([0,0])]
+        else:
+            return mw_arr_from_gens(qf,mwgens)
+
     def ecqf_df(self):
         if self.js_to_qf == None:
             raise ValueError('No data available')
