@@ -1,0 +1,15 @@
+Isogeny class: trace a = 0, p = 5  (disc = -20)
+Lattice points computed with k = 6
+Number of elements: 2
+
+Element 1
+  points file: curve_f0_g2.txt
+  equation:    y^2 = x^3 + 2 mod 5
+  tau (str):   √-5
+  tau (xy):    (0, 2.236)
+
+Element 2
+  points file: curve_f0_g1.txt
+  equation:    y^2 = x^3 + 1 mod 5
+  tau (str):   (-1+ √-5)/2
+  tau (xy):    (-0.5, 1.118)
