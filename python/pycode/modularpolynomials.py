@@ -1,7 +1,7 @@
 ## Data loading
 
 import json
-from ringclasses import Polynomial
+from alg_classes import Polynomial
 
 with open('data/atkinpolys.json', 'r') as f:
     atkin_polys_raw = json.load(f)

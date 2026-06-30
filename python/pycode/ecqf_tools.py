@@ -1,12 +1,16 @@
 import numpy as np
 import pandas as pd
 import json
+from pathlib import Path
 
-from nt import *
+from nt import primesBetween,discfac,find_prim_root,quad_rec,gcd,hall_multiplier,axby
 from alg_classes import *
 from qfs import *
+from graph_tools import nbrdata_to_isomat,cycle_from_neighbor_data
 
 M2Z = Mat_n_Z(2)
+
+_DATA_DIR = Path(__file__).parent / 'data'
 
 ##################################
 # Loading precomputed bijections #
@@ -16,13 +20,13 @@ def strtup_to_tup(s):
     return tuple([int(s0) for s0 in s[1:-1].split(',')])
 
 
-with open('data/ecqf_ord_pcbij_4_1024.json', 'r') as f:
+with open(_DATA_DIR / 'ecqf_ord_pcbij_4_1024.json', 'r') as f:
     ecqf_ord_pcbij_1K_loaded = json.load(f)
 ecqf_ord_1K_pc = {strtup_to_tup(aps):{int(ns):tuple(ecqf_ord_pcbij_1K_loaded[aps][ns] )
-                                       for ns in ecqf_ord_pcbij_1K_loaded[aps]} 
+                                       for ns in ecqf_ord_pcbij_1K_loaded[aps]}
                                        for aps in ecqf_ord_pcbij_1K_loaded}
 
-with open('data/ecqf_ss_pcbij_4_1024_INC.json', 'r') as f:
+with open(_DATA_DIR / 'ecqf_ss_pcbij_velu_4_1024.json', 'r') as f:
     ecqf_ss_pcbij_1K_loaded = json.load(f)
 ecqf_ss_1K_pc = {int(ps):{strtup_to_tup(jss):tuple(ecqf_ss_pcbij_1K_loaded[ps][jss] )
                                        for jss in ecqf_ss_pcbij_1K_loaded[ps]} 
@@ -33,13 +37,16 @@ def get_aps_pc():
     return [ap for ap in ecqf_ord_1K_pc]
 
 def get_ssps_pc():
-    return [p for p in ecqf_ss_1K_pc]
+    ps = [p for p in ecqf_ss_1K_pc]
+    ps.sort()
+    return ps
 
 def ap_in_pc_data(ap:tuple[int,int])->bool:
     if ap[0]==0:
         return ap[1] in get_ssps_pc()
     else:
-        return ap in get_aps_pc()
+        a,p = ap
+        return (abs(a),p) in get_aps_pc()
 
 # Misc. tools
 def abc_to_tau(abc:tuple[int,int,int])->np.array:
@@ -68,6 +75,33 @@ def abc_to_tau_str(abc):
         return '('+num_str+f')/{den}'
     else:
         return num_str+'/'+str(den)
+
+def ec_eq_str_base(fg:tuple[int,int]):
+    """'y^2 = x^3 + f x + g' with 0/±1/negative coefficients handled, no 'mod p'."""
+    eqs = 'y^2 = x^3'
+    f,g = fg
+    if f!= 0:
+        if f>0:
+            if f == 1:
+                eqs+= ' + x'
+            else:
+                eqs+=f' + {f} x'
+        else:
+            f = -f
+            if f == 1:
+                eqs+= ' - x'
+            else:
+                eqs+=f' - {f} x'
+    if g != 0:
+        if g>0:
+            eqs+=f' + {g}'
+        else:
+            g = -g
+            eqs+=f' - {g}'
+    return eqs
+
+def ec_eq_str(fg:tuple[int,int],p:int):
+    return ec_eq_str_base(fg)+(f' mod {p}')
 
 def export_points(grp:list,filename:str):
     file = open(filename,'a')
@@ -137,6 +171,31 @@ def qf_l_order(qf,mm = 64):
 def trace_frob(fg:tuple[int,int],p:int)->int:
     f,g = fg
     return - sum([quad_rec(x**3+f*x+g,p) for x in range(p)])
+def fg_to_j(fg:tuple[int,int],char =0):
+    f,g = fg
+    if f == 0 or char>0 and f%char ==0:
+        return 0
+    elif g == 0 or char>0 and g % char ==0:
+        return 1728
+    else:
+        f3 = 4*(f**3)
+        jnum = 1728 *f3
+        jden = f3+27*(g**2)
+        if char == 0:
+            if jden == 0:
+                raise ZeroDivisionError('Singular curve')
+            elif jnum % jden == 0:
+                return jnum//jden
+            else:
+                return jnum/jden
+        else:
+            jnum = jnum % char
+            jden = jden % char
+            if jden == 0:
+                raise ZeroDivisionError('Singular curve')
+            jdeninv = pow(jden,-1,char)
+            return (jnum*jdeninv)%char
+
 
 def j_to_fg(j:int,char = 0):
     if j == 0:
@@ -321,8 +380,13 @@ def qf_ap_FrMat(qf:tuple[int,int,int],ap:tuple[int,int],s=1)->MatrixElement:
     trace_diff = a- (tau_scalar * atau_mat.trace)
     assert trace_diff % 2 == 0
     one_scalar = trace_diff//2
-    frmat_tup = (one_scalar * I2m + tau_scalar * atau_mat).vec
-    return MatrixElement(frmat_tup,M2Z)
+    frmat = one_scalar * I2m + tau_scalar * atau_mat
+    if abs(frmat.trace)!= abs(a):
+        raise ValueError('Something went wrong in computation')
+    if frmat.trace == a:
+        return frmat
+    else:
+        return -frmat
 
 
 def frk_fxp_mat(frmat:MatrixElement,k:int)->tuple[tuple[int,int],tuple[int,int]]:
@@ -365,18 +429,70 @@ def mw_arr_from_gens(abc:tuple,gens:dict)->np.array:
                for pt0 in pts for m in range(gens[gen])]
     return np.array([pt[0]*one+pt[1]*tau for pt in pts])/den
 
+
+                #####################
+                # Single Curve Data #
+                #####################
+
+def ec_look_up(fg:tuple[int,int],p:int)->dict:
+    a = trace_frob(fg,p)
+    ap0 = (abs(a),p)
+    ap = (a,p)
+    f,g = fg
+    ecd = (4*pow(f,3,p)+27*pow(g,2,p))%p
+    if ecd == 0:
+        raise ValueError('This is a singular curve')    
+    if g == 0:
+        s = quad_rec(f,p)
+    else:
+        s = quad_rec(g,p)
+    j = fg_to_j(fg,p) %p
+    df = a*a-4*p
+    d,cf = discfac(df)
+    data = {'ap':ap,'ec_eq':ec_eq_str(fg,p),'coefs':fg,
+            'j':j,'s':s,'frob_tr':a,'frob_disc':df,'frob_cond':cf,'endo_fun_disc':d,
+            'has_pcqf':False,'qf':None}
+    if a == 0:
+        if p in get_ssps_pc():
+            data['has_pcqf'] = True
+            data['qf'] = ecqf_ss_1K_pc[p][(j,s)]
+    else:
+        if ap0 in get_aps_pc():
+            data['has_pcqf'] = True
+            data['qf'] = ecqf_ord_1K_pc[ap0][j%p]
+    if not data['has_pcqf']:
+        return data
+    qf = data['qf']
+    fr_s = 1
+    if a < 0:
+        fr_s = -1
+    data['FrobMat']= qf_ap_FrMat(qf,ap,s=fr_s)
+    tau_arr = abc_to_tau(qf)
+    data['tau_str'] = abc_to_tau_str(qf)
+    data['tau_xy'] = tuple([np.round(x,3) for x in tau_arr])
+    return data
+
             ##############
             # ECQF Class #
             ##############
+
 class QFIsogenyClass:
     def __init__(self,d:int):
+        if d >= 0 or (d % 4 >1):
+            raise ValueError(f'{d} must be a negative discriminant')
+        self.qfs_all = get_qfs_all(d)
+        self.qfs_ordered = tuple(self.qfs_all)
+        self.neighbor_data_horz = {}
+        self.vert_isog_data = {}
+        self.neighbor_data = {}
         self.disc = d
         d0,c = discfac(d)
         self.field_disc = d0
         self.cond = c
-        self.qfs_all = get_qfs_all(d)
         self.qfs_leaves = [qf for qf in self.qfs_all if qf_disc(qf)==d]
+        # This stores the discriminant of the endomorphism ring of the quadratic form
         self.endo_disc_dict = {qf:qf_disc(qf) for qf in self.qfs_all}
+        # This stores the conductor of the endomorphism ring of the quadratic form
         self.endo_cond_dict = {qf:discfac(qf_disc(qf))[1] for qf in self.qfs_all}
         self.l_dict = {}
         self.ord_dict = {}
@@ -384,11 +500,89 @@ class QFIsogenyClass:
             l,n = qf_l_order(qf)
             self.l_dict[qf]=l
             self.ord_dict[qf]=n
+
+
+    def get_isog_neighbors_horz(self,l:int):
+        if l in self.neighbor_data_horz:
+            return self.neighbor_data_horz[l]
+        else:
+            qfs = self.qfs_ordered
+            data= {qf:qf_isogs_hor(qf,l) for qf in qfs}
+            self.neighbor_data_horz[l] = data
+            return data
+
+    def get_isog_neighbors_asc(self,l:int):
+        c = self.cond
+        if c % l != 0:
+            return {}
+        elif l in self.vert_isog_data:
+            return self.vert_isog_data[l]
+        else:
+            asc_data = {}
+            qfs = self.qfs_ordered
+            for qf in qfs:
+                d_qf = qf_disc(qf)
+                c_qf = discfac(d_qf)[1]
+                if c_qf % l == 0:
+                    asc_data[qf] = qf_parents(qf,l)[0]
+            self.vert_isog_data[l] = asc_data
+            return asc_data
+        
+    def get_neighbor_data_all(self,l):
+        if l in self.neighbor_data:
+            return self.neighbor_data[l]
+        # Copy the cached horizontal lists before appending the vertical
+        # neighbours, otherwise the in-place append would pollute the cached
+        # horizontal-neighbour data (which isog_cycle and the graph layout rely
+        # on being purely horizontal).
+        horiz = self.get_isog_neighbors_horz(l)
+        neighbors_data_l = {qf: list(horiz[qf]) for qf in horiz}
+        c = self.cond
+        if c % l == 0:
+            vert_data = self.get_isog_neighbors_asc(l)
+            for qf0 in vert_data:
+                qf1 = vert_data[qf0]
+                neighbors_data_l[qf0].append(qf1)
+                neighbors_data_l[qf1].append(qf0)
+        self.neighbor_data[l] = neighbors_data_l
+        return neighbors_data_l
     
+    def adjacency_matrix(self,l):
+        data = self.get_neighbor_data_all(l)
+        return nbrdata_to_isomat(nbrdata=data,verts_ordered=self.qfs_ordered)
+    
+    def isog_cycle(self,qf0:tuple[int,int,int],l:int):
+        if qf0 not in self.qfs_all:
+            raise ValueError(f'{qf0} is not in isogeny class')
+        lnbr_data = self.get_isog_neighbors_horz(l)
+        return cycle_from_neighbor_data(qf0,lnbr_data)
+    
+    def isog_cycle_partition(self,l):
+        cond_dict = self.endo_cond_dict
+        qfs_by_cond = {c:[] for c in cond_dict.values()}
+        for qf,c in cond_dict.items():
+            qfs_by_cond[c].append(qf)
+        cycles_by_cond = {c:[] for c in qfs_by_cond if c % l != 0}
+        for c in cycles_by_cond:
+            qfs_c = qfs_by_cond[c]
+            while len(qfs_c)>0:
+                cyc_new = self.isog_cycle(qfs_c[0],l)
+                assert len(cyc_new)>0
+                cycles_by_cond[c].append(cyc_new)
+                qfs_c_new = [qf for qf in qfs_c if qf not in cyc_new]
+                assert len(qfs_c_new)+len(cyc_new) == len(qfs_c)
+                qfs_c = qfs_c_new
+        return qfs_by_cond
+            
+        
+
     
 class ECQFIsogenyClass(QFIsogenyClass):
     def __init__(self,a:int,p:int):
         super().__init__(a*a-4*p)
+        self.a_sign = 1
+        if a <0:
+            self.a_sign = -1
         self.disc = a*a-4*p
         nonsquare = p-1
         self.ap = (a,p)
@@ -397,7 +591,7 @@ class ECQFIsogenyClass(QFIsogenyClass):
         while nonsquare>1 and quad_rec(nonsquare,p)>= 0:
             nonsquare-=1
         self.nonsquare = nonsquare
-        self.qf_to_frob_mats = {qf:qf_ap_FrMat(qf,(a,p)) for qf in self.qfs_all}
+        self.qf_to_frob_mats = {qf:qf_ap_FrMat(qf,(a,p),s=self.a_sign) for qf in self.qfs_all}
         self.js_to_qf = None
         self.js = None
         self.jsigs = None
@@ -438,18 +632,46 @@ class ECQFIsogenyClass(QFIsogenyClass):
         if self.js_to_qf == None:
             raise ValueError('No data available')
         jss = self.jsigs
+        if type(jss[0])==tuple:
+            jlist = [js[0] for js in jss]
+        else:
+            jlist = jss
         fgs = [(self.js_to_models)[js] for js in jss]
         qfs = [(self.js_to_qf)[js] for js in jss]
-        return pd.DataFrame({'js':jss,'fg':fgs,'abc':qfs})
+        frobmats = [self.qf_to_frob_mats[qf].vec for qf in qfs]
+        qfds = [qf_disc(qf) for qf in qfs]
+        qf_cs = [discfac(d)[1] for d in qfds]
+        qf_ccs = [self.cond//c for c in qf_cs]
+        tau_xys_arr = [abc_to_tau(qf) for qf in qfs]
+        tau_xys = [tuple([np.round(x,3) for x in xy]) for xy in tau_xys_arr]
+        tau_strs = [abc_to_tau_str(qf) for qf in qfs]
+        return pd.DataFrame({'ec_invs':jss,'j_inv':jlist,'EC_coefs':fgs,'qf_coefs':qfs,
+                             'endo_disc':qfds,'endo_cond':qf_cs,'endo_cocond':qf_ccs,
+                             'frobmat':frobmats,'tau_s':tau_strs,'tau_xy':tau_xys})
     
+    def qf_to_mwgr_arr_single(self,k:int,qf:tuple[int,int,int]):
+        if qf not in self.qf_to_frob_mats:
+            raise ValueError('Form not in dictionary')
+        frbmat = self.qf_to_frob_mats[qf]
+        mw_gens =  frob_to_mw_gens(frbmat,k)
+        return mw_arr_from_gens(qf,mw_gens)
+
     def ecqf_mw_df(self,k:int):
         if self.js_to_qf == None:
             raise ValueError('No data available')
         jss = self.jsigs
+        if type(jss[0])==tuple:
+            jlist = [js[0] for js in jss]
+        else:
+            jlist = jlist
         fgs = [(self.js_to_models)[js] for js in jss]
         qfs = [(self.js_to_qf)[js] for js in jss]
-        qf_to_frm_dic = self.qf_to_frob_mats
-        frmats = [qf_to_frm_dic[qf] for qf in qfs]
+        frmats = [self.qf_to_frob_mats[qf] for qf in qfs]
+        qfds = [qf_disc(qf) for qf in qfs]
+        qf_cs = [discfac(d)[1] for d in qfds]
+        qf_ccs = [self.cond//c for c in qf_cs]
+        tau_xys = [abc_to_tau(qf) for qf in qfs]
+        tau_strs = [abc_to_tau_str(qf) for qf in qfs]
         frmat_tups = [frm.vec for frm in frmats]
         mwgsets = []
         mwntups = []
@@ -459,7 +681,11 @@ class ECQFIsogenyClass(QFIsogenyClass):
             genvs.sort(key = lambda g:gendic[g],reverse = True)
             mwgsets.append(genvs)
             mwntups.append(tuple([gendic[g] for g in genvs]))
-        return pd.DataFrame({'js':jss,'fg':fgs,'abc':qfs,'frob_matrix':frmat_tups,'MW_gens':mwgsets,'MW_iso_type':mwntups})
+        df = pd.DataFrame({'ec_invs':jss,'j_inv':jlist,'EC_coefs':fgs,'qf_coefs':qfs,
+                             'endo_disc':qfds,'endo_cond':qf_cs,'endo_cocond':qf_ccs,
+                             'frobmat':frmat_tups,'tau_s':tau_strs,'tau_xys':tau_xys,
+                             'MW_gens':mwgsets,'MW_iso_type':mwntups})
+        return df
     
 
     

@@ -1,7 +1,9 @@
 from nt import discfac, gcd
 from identities import *
-from ringclasses import IntegerSquareMatrix
-from modularpolynomials import *
+from alg_classes import MatrixElement, Mat_n_Z
+# from modularpolynomials import *
+
+M2Z = Mat_n_Z(2)
 
                                     ###################
                                     # Quadratic Forms #
@@ -17,7 +19,6 @@ def qf_ev(qf,xy):
 def qf_evs_inrange(qf:tuple[int,int,int],m:int):
     a,b,c = qf
     return list({qf_ev(qf,(x,y)) for x in range(-m,m+1) for y in range(-m,m+1)})
-
 
 
 def qf_in_fundom(qf:tuple[int,int,int])->bool:
@@ -51,62 +52,61 @@ def qf_disc(qf:tuple[int,int,int])->tuple[int,int,int]:
 def qf_to_dc(qf:tuple[int,int,int])->tuple[int,int]:
     return discfac(qf_disc(qf))
 
-    
+
 ########################
 # Modular group action #
 ########################
 
-def qf_to_mat(qf:tuple[int,int,int])->IntegerSquareMatrix:
+def qf_to_mat(qf:tuple[int,int,int])->MatrixElement:
     a,b,c = qf
-    return IntegerSquareMatrix([[2*a,b],[b,2*c]])
+    return MatrixElement(((2*a,b),(b,2*c)), M2Z)
 
-def mat_to_qf(m:IntegerSquareMatrix)->tuple[int,int,int]:
-    if not isinstance(m,IntegerSquareMatrix) or m.dim!=2:
+def mat_to_qf(m:MatrixElement)->tuple[int,int,int]:
+    if not isinstance(m, MatrixElement) or m.n != 2:
         raise TypeError('Input should be 2x2 integer matrix')
-    arr = m.mat
+    arr = m.vec
     a,b1,b2,c = arr[0][0],arr[0][1],arr[1][0],arr[1][1]
-    if b1!= b2:
+    if b1 != b2:
         raise ValueError('Input should be symmetric matrix')
-    if a % 2 !=0 or c %2 != 0:
+    if a % 2 != 0 or c % 2 != 0:
         raise ValueError('Diagonal entries should be even')
-    return (a//2,b1,c//2)
+    return (a//2, b1, c//2)
 
-def act_qf(qf:tuple[int,int,int],m:IntegerSquareMatrix):
+def act_qf(qf:tuple[int,int,int], m:MatrixElement):
     qfm = qf_to_mat(qf)
-    tm = m.trace()
-    minv = IntegerSquareMatrix([[tm,0],[0,tm]])+(-1)*m
-    qfm_new = minv.transpose()*qfm*minv
+    madj = m.adjugate
+    qfm_new = madj.transpose * qfm * madj
     return mat_to_qf(qfm_new)
 
 
 def qf_to_fun_dom(qf:tuple)->tuple:
     d = qf_disc(qf)
-    if d >=0:
+    if d >= 0:
         raise ValueError('Discriminant must be negative')
-    matrix = IntegerSquareMatrix([[1,0],[0,1]])
+    matrix = MatrixElement(((1,0),(0,1)), M2Z)
     while not qf_in_fundom(qf):
         a,b,c = qf
-        if a>c:
-            m0 = IntegerSquareMatrix([[0,-1],[1,0]])
-            matrix = m0*matrix
-            qf = act_qf(qf,m0)
+        if a > c:
+            m0 = MatrixElement(((0,-1),(1,0)), M2Z)
+            matrix = m0 * matrix
+            qf = act_qf(qf, m0)
         elif a < abs(b):
-            k = b//(2*a)
+            k = b // (2*a)
             if b % (2*a) >= a:
-                k+=1
-            m0 = IntegerSquareMatrix([[1,k],[0,1]])
-            matrix =  m0*matrix
-            qf = act_qf(qf,m0)
-        elif a+b==0:
-            m0 = IntegerSquareMatrix([[1,-1],[0,1]])
-            matrix =  m0*matrix
-            qf = act_qf(qf,m0)
-        elif a==c and b<0:
-            m0 = IntegerSquareMatrix([[0,-1],[1,0]])
-            matrix =  m0*matrix
-            qf = act_qf(qf,m0)
+                k += 1
+            m0 = MatrixElement(((1,k),(0,1)), M2Z)
+            matrix = m0 * matrix
+            qf = act_qf(qf, m0)
+        elif a + b == 0:
+            m0 = MatrixElement(((1,-1),(0,1)), M2Z)
+            matrix = m0 * matrix
+            qf = act_qf(qf, m0)
+        elif a == c and b < 0:
+            m0 = MatrixElement(((0,-1),(1,0)), M2Z)
+            matrix = m0 * matrix
+            qf = act_qf(qf, m0)
         else:
-            return qf,matrix
+            return qf, matrix
     return qf, matrix
 
 def qf_mod_gamma(qf:tuple[int,int,int])->tuple[int,int,int]:
@@ -118,37 +118,39 @@ def qf_mod_gamma(qf:tuple[int,int,int])->tuple[int,int,int]:
 
 def get_qfs_all(d:int):
     reps_found = []
-    # First we check that d is indeed a discriminant;
-    # if it isn't, we simply return an empty list because there are no associated lattices
     if d % 4 > 1 or d >= 0:
         return reps_found
     b = d % 4
-    while 3*b *b <= abs(d):
+    while 3*b*b <= abs(d):
         num = (b*b-d)//4
         a = b
-        while a *a <= num:
+        while a*a <= num:
             if a == 0:
-                a+=1
+                a += 1
             if num % a == 0:
-                c = num//a
+                c = num // a
                 if qf_in_fundom((a,b,c)):
                     reps_found.append(qf_make_prim((a,b,c)))
-                if b!= 0 and qf_in_fundom((a,-b,c)):
+                if b != 0 and qf_in_fundom((a,-b,c)):
                     reps_found.append(qf_make_prim((a,-b,c)))
-            a+=1
-        b+=2
+            a += 1
+        b += 2
     return reps_found
 
 def get_qfs_strict(d:int):
     return [qf for qf in get_qfs_all(d) if qf_disc(qf)==d]
 
+def qfs_ordered_by_cond(d):
+    qfs = get_qfs_all(d)
+    qfs.sort(key = lambda qf:discfac(qf_disc(qf))[1])
+    return qfs
 
 def class_group_id(d:int):
     if d % 4 > 1:
         raise ValueError(f'{d} is not a discriminant')
     else:
         return (1,d%4,-(d//4))
-    
+
 def class_group_inv(qf:tuple[int,int,int])->tuple[int,int,int]:
     a,b,c = qf_mod_gamma(qf)
     return qf_mod_gamma((a,-b,c))
@@ -158,33 +160,20 @@ def class_group_inv(qf:tuple[int,int,int])->tuple[int,int,int]:
 #############
 def fricke_inv(qf:tuple[int,int,int],l:int)->tuple[int,int,int]:
     a,b,c = qf
-    return (l*l * c, -l*b,a)
+    return (l*l * c, -l*b, a)
 
-def gamma_0_coset_reps(p:int)->list[IntegerSquareMatrix]:
-    return [IntegerSquareMatrix([[1,0],[0,1]])]+[IntegerSquareMatrix([[0,-1],[1,a]])
-           for a in range(-(p//2),(p//2)+(p%2))]
+def gamma_0_coset_reps(p:int)->list[MatrixElement]:
+    return [MatrixElement(((1,0),(0,1)), M2Z)] + [MatrixElement(((0,-1),(1,a)), M2Z)
+            for a in range(-(p//2), (p//2)+(p%2))]
 
 def gamma_0_orb(qf:tuple[int,int,int],l:int)->list[tuple[int,int,int]]:
     return [act_qf(qf,m) for m in gamma_0_coset_reps(l)]
 
 
-def qf_isogenies_all(qf:tuple[int,int,int],l:int,normalize=True):
-    isoqfs = [fricke_inv(qf0,l) for qf0 in gamma_0_orb(qf,l)]
-    if not normalize:
-        return isoqfs
-    return [qf_mod_gamma(qf0) for qf0 in isoqfs]
-
-def qf_isogenies_hor(qf:tuple[int,int,int],l:int):
-    d = qf_disc(qf)
-    return [qf0 for qf0 in qf_isogenies_all(qf,l) if qf_disc(qf0)==d]
-
-def qf_isogenies_down(qf:tuple[int,int,int],l:int):
-    d = qf_disc(qf)
-    return [qf0 for qf0 in qf_isogenies_all(qf,l) if qf_disc(qf0)<d]
 
 def qf_parents(qf:tuple[int,int,int],l:int):
     d = qf_disc(qf)
-    return [qf0 for qf0 in qf_isogenies_all(qf,l) if qf_disc(qf0)>d]
+    return [qf0 for qf0 in qf_isogs(qf,l) if qf_disc(qf0)>d]
 
 def qf_2_mat(qf):
     a,b,c = qf
@@ -197,7 +186,7 @@ def mat_2_qf(m):
 def prod_tup(t):
     p = 1
     for x in t:
-        p*=x
+        p *= x
     return p
 
 ### Computing isogeny codomains
@@ -218,6 +207,12 @@ def qf_isogs(qf0,l):
 def qf_isogs_hor(qf0,l):
     return [qf for qf in qf_isogs(qf0,l) if qf_disc(qf)==qf_disc(qf0)]
 
+def qf_isogs_asc(qf0,l):
+    return [qf for qf in qf_isogs(qf0,l) if qf_disc(qf)>qf_disc(qf0)]
+
+def qf_isogs_des(qf0,l):
+    return [qf for qf in qf_isogs(qf0,l) if qf_disc(qf)<qf_disc(qf0)]
+
 def qfs_isogs_int(qfl1,qfl2):
     qf1,l1 = qfl1
     qf2,l2 = qfl2
@@ -225,11 +220,17 @@ def qfs_isogs_int(qfl1,qfl2):
     if len(qf3s)==1:
         return list(qf3s)[0]
     else:
-        # Something went wrong, either there is no tuple satisfying those conditions
-        # or there are multiple tuples - second would be due to an edge case, first should be impossible
-        # if pairs are chosen appropriately
         return qf3s
-        
+
+def qf_isog_parent(qf,l):
+    d,c = discfac(qf_disc(qf))
+    if c % l != 0:
+        raise ValueError(f'No parents in degree {l}')
+    else:
+        cands = [qf0 for qf0 in qf_isogs(qf,l) if discfac(qf_disc(qf0))[1]*l == c]
+        assert len(cands)==1
+        return cands[0]
+    
 # Computing isogeny cycles
 def qf_isog_cycle(qf0,l):
     cyc = qf_isogs(qf0,l)
@@ -259,7 +260,7 @@ def qf_isog_cycle_power(qf0,lk):
     return [cyc[(k*i) % n] for i in range(nm)]
 
 def qf_sibs(qf0:tuple[int,int,int],l:int):
-    sibs = qf_isogenies_down(qf_parents(qf0,l)[0],l)
+    sibs = qf_isogs_des(qf_isog_parent(qf0,l),l)
     return [qf0]+[qf for qf in sibs if qf != qf0]
 
 def cycs_from_ancestors(qf0):
@@ -276,34 +277,31 @@ def cycs_from_ancestors(qf0):
     return cycs
 
 
-
-
-
 ##########
 # X_0(l) #
 ##########
-def minv(m:IntegerSquareMatrix)->IntegerSquareMatrix:
-    return -m+m.trace()
 
-def find_rrep_g0(m:IntegerSquareMatrix,l:int)->IntegerSquareMatrix:
+def minv(m:MatrixElement)->MatrixElement:
+    return m.adjugate
+
+def find_rrep_g0(m:MatrixElement, l:int)->MatrixElement:
     reps = gamma_0_coset_reps(l)
-    cands= [m0 for m0 in reps if ((m*minv(m0)).mat)[1][0]%l==0]
-    if len(cands)!=1:
+    cands = [m0 for m0 in reps if (m * minv(m0)).vec[1][0] % l == 0]
+    if len(cands) != 1:
         raise ValueError('No unique rep')
-    else:
-        return cands[0]
+    return cands[0]
 
-def qf_to_gamma_0_fd(qf:tuple[int,int,int],l:int)->tuple[tuple[int,int,int],IntegerSquareMatrix]:
-    qf0,m = qf_to_fun_dom(qf)
-    if m.mat[1][0]%l == 0:
+def qf_to_gamma_0_fd(qf:tuple[int,int,int], l:int)->tuple[tuple[int,int,int], MatrixElement]:
+    qf0, m = qf_to_fun_dom(qf)
+    if m.vec[1][0] % l == 0:
         return qf0, m
-    ml = minv(find_rrep_g0(m,l))
-    return act_qf(qf,ml),m*ml
+    ml = minv(find_rrep_g0(m, l))
+    return act_qf(qf, ml), m * ml
 
-def qf_mod_gamma_0(qf:tuple[int,int,int],l:int)->tuple[int,int,int]:
-    return qf_to_gamma_0_fd(qf,l)[0]
+def qf_mod_gamma_0(qf:tuple[int,int,int], l:int)->tuple[int,int,int]:
+    return qf_to_gamma_0_fd(qf, l)[0]
 
-def qf_x0_endos(qf:tuple[int,int,int],l:int)->list[tuple[int,int,int]]:
+def qf_x0_endos(qf:tuple[int,int,int], l:int)->list[tuple[int,int,int]]:
     qf0 = qf_mod_gamma(qf)
     return [qf1 for qf1 in gamma_0_orb(qf0,l) if qf_mod_gamma(fricke_inv(qf1,l))==qf0]
 
@@ -313,8 +311,8 @@ def x0_endos_all(p:int)->dict:
     while a*a < 4*p:
         d = a*a-4*p
         qfs = get_qfs_all(d)
-        endos_by_trace[a]={qf:qf_x0_endos(qf,p) for qf in qfs}
-        a+=1
+        endos_by_trace[a] = {qf:qf_x0_endos(qf,p) for qf in qfs}
+        a += 1
     return endos_by_trace
 
 def iso_taus_x0_l(qf,l):
@@ -328,7 +326,5 @@ def isos_x0_l_all(d,l):
         qf1s = gamma_0_orb(qf0,l)
         for qf1 in qf1s:
             if qf_mod_gamma(fricke_inv(qf1,l)) in qfs:
-                iso_taus[qf1]=fricke_inv(qf1,l)
+                iso_taus[qf1] = fricke_inv(qf1,l)
     return iso_taus
-
-
