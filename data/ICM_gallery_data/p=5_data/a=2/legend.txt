@@ -13,3 +13,9 @@ Element 2
   equation:    y^2 = x^3 + x + 3 mod 5
   tau (str):   √-4
   tau (xy):    (0, 2)
+
+Notes:
+* The two curves should be arranged vertically, with the square lattice above the tau = 2i lattice to reflect the volcano conventions
+
+* This is one of two isogeny classes that contains the square lattice (the other is a = 4,
+And contains *only* the square lattice).

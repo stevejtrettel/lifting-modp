@@ -13,3 +13,10 @@ Element 2
   equation:    y^2 = x^3 + 1 mod 5
   tau (str):   (-1+ √-5)/2
   tau (xy):    (-0.5, 1.118)
+
+
+Notes:
+* We should have the two curves arranged horizontally (because they have the same endomorphism ring)
+* This is the lenticular picture! There are equivalences that match the equation/picture in two different ways.
+
+

@@ -7,3 +7,5 @@ Element 1
   equation:    y^2 = x^3 + 2 x mod 5
   tau (str):   √-1
   tau (xy):    (0, 1)
+
+Notes: This is one of two models over F5 that uses the tau = sqrt(-1) lattice (the other has trace of Frobenius 2).
